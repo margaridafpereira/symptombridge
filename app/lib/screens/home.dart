@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
-import 'consult_screen.dart';
+import '../clinician/clinician_screens.dart';
 import 'intake_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -18,26 +18,19 @@ class HomeScreen extends StatelessWidget {
                 const Row(children: [
                   Icon(Icons.record_voice_over, color: C.primary, size: 32),
                   SizedBox(width: 12),
-                  Text('SymptomBridge', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                  Flexible(child: Text('SymptomBridge', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800))),
                 ]),
                 const SizedBox(height: 12),
                 const Text(
-                  'O doente descreve os sintomas por voz. A app transcreve, organiza e mostra ao médico os sinais '
-                  'de alarme e as hipóteses a considerar, cada uma com as palavras de onde veio.',
+                  'Conte-nos o que sente, por voz ou por escrito, antes da consulta. O médico recebe as suas '
+                  'respostas organizadas e fica a saber o que é mais importante.',
                   style: TextStyle(fontSize: 16, color: C.muted, height: 1.4),
                 ),
                 const SizedBox(height: 28),
                 _ModeCard(
-                  icon: Icons.medical_services_outlined,
-                  title: 'Consulta',
-                  text: 'O aparelho fica na secretária e ouve a conversa. O ecrã do médico atualiza-se ao vivo.',
-                  onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ConsultScreen())),
-                ),
-                const SizedBox(height: 14),
-                _ModeCard(
                   icon: Icons.chat_outlined,
-                  title: 'Pré-consulta',
-                  text: 'Na sala de espera ou em casa, o doente responde a algumas perguntas. No fim, envia ao médico.',
+                  title: 'Começar a pré-consulta',
+                  text: 'Algumas perguntas simples, em poucos minutos. No fim, as respostas seguem para o médico.',
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const IntakeScreen())),
                 ),
                 const SizedBox(height: 28),
@@ -49,12 +42,20 @@ class HomeScreen extends StatelessWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Projeto de portefólio, não é um dispositivo médico. O doente nunca vê hipóteses; tudo vai '
-                        'para um profissional, que decide. Use casos fictícios, não dados reais de saúde.',
+                        'Projeto de portefólio, não é um dispositivo médico. As suas respostas vão para um '
+                        'profissional, que decide. Use casos fictícios, não dados reais de saúde.',
                         style: TextStyle(color: C.muted, fontSize: 13, height: 1.4),
                       ),
                     ),
                   ]),
+                ),
+                const SizedBox(height: 32),
+                Center(
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.badge_outlined),
+                    label: const Text('Área do profissional de saúde'),
+                    onPressed: () => openClinicianArea(context),
+                  ),
                 ),
               ]),
             ),

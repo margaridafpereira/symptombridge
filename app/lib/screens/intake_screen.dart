@@ -4,7 +4,7 @@ import 'package:symptom_engine/symptom_engine.dart';
 import '../session.dart';
 import '../speech/speech.dart';
 import '../theme.dart';
-import 'consult_screen.dart';
+import '../clinician/access.dart';
 
 /// Safety questions first: for each complaint, what must be ruled out.
 const _screening = {
@@ -130,8 +130,10 @@ class _IntakeScreenState extends State<IntakeScreen> {
   }
 
   void _send() {
+    _speech.stop();
     _handedOver = true;
-    Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => _SentScreen(session: _session)));
+    Inbox.instance.add(SentIntake(_session, DateTime.now()));
+    Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => const _SentScreen()));
   }
 
   @override
@@ -276,10 +278,9 @@ class _Line extends StatelessWidget {
   }
 }
 
-/// After sending: in the demo the same device shows what the clinician gets.
+/// After sending: what the patient sees. Nothing clinical.
 class _SentScreen extends StatelessWidget {
-  const _SentScreen({required this.session});
-  final Session session;
+  const _SentScreen();
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -293,16 +294,12 @@ class _SentScreen extends StatelessWidget {
               const Text('As suas respostas foram enviadas ao médico.',
                   textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              const Text('Nesta demonstração, pode ver o que o médico recebe.',
+              const Text('Aguarde que o chamem. Se se sentir pior, avise já um profissional.',
                   textAlign: TextAlign.center, style: TextStyle(color: C.muted)),
               const SizedBox(height: 20),
-              FilledButton.icon(
-                icon: const Icon(Icons.medical_services_outlined),
-                label: const Text('Ver o ecrã do médico'),
-                onPressed: () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute<void>(builder: (_) => ConsultScreen(session: session, ownsSession: true)),
-                ),
+              OutlinedButton(
+                onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
+                child: const Text('Voltar ao início'),
               ),
             ]),
           ),

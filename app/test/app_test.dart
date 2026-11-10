@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:symptombridge/clinician/access.dart';
 import 'package:symptombridge/main.dart';
 import 'package:symptombridge/screens/consult_screen.dart';
 import 'package:symptombridge/screens/intake_screen.dart';
@@ -14,10 +15,23 @@ Future<void> phone(WidgetTester tester, Widget home, {Size size = const Size(108
 }
 
 void main() {
-  testWidgets('home offers both modes', (tester) async {
-    await tester.pumpWidget(const SymptomBridgeApp());
-    expect(find.text('Consulta'), findsOneWidget);
-    expect(find.text('Pré-consulta'), findsOneWidget);
+  setUp(() {
+    ClinicianAccess.instance.signOut();
+    Inbox.instance.clear();
+  });
+
+  testWidgets("the patient's home has no way into the clinician's screen without the code", (tester) async {
+    await phone(tester, const SymptomBridgeApp());
+    expect(find.text('Começar a pré-consulta'), findsOneWidget);
+    expect(find.text('Nova consulta'), findsNothing);
+
+    await tester.tap(find.text('Área do profissional de saúde'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '0000');
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Código errado.'), findsOneWidget);
+    expect(find.text('Nova consulta'), findsNothing);
   });
 
   testWidgets('consultation: a cardiac story raises the red flag on the clinician panel', (tester) async {
@@ -58,14 +72,27 @@ void main() {
     expect(find.textContaining('coronária'), findsNothing);
   });
 
-  testWidgets('pre-visit ends with a summary the clinician can open', (tester) async {
-    await phone(tester, const IntakeScreen());
+  testWidgets('a sent pre-visit reaches the clinician only, after the code', (tester) async {
+    await phone(tester, const SymptomBridgeApp());
+    await tester.tap(find.text('Começar a pré-consulta'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Tenho tosse e o nariz entupido.');
     await tester.testTextInput.receiveAction(TextInputAction.send);
     await tester.pump();
     await tester.tap(find.text('Terminar e enviar ao médico'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ver o ecrã do médico'));
+    expect(find.text('As suas respostas foram enviadas ao médico.'), findsOneWidget);
+    expect(find.textContaining('Constipação'), findsNothing, reason: 'the patient sees nothing clinical');
+
+    await tester.tap(find.text('Voltar ao início'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Área do profissional de saúde'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), ClinicianAccess.demoCode);
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pré-consultas recebidas'), findsOneWidget);
+    await tester.tap(find.textContaining('Tosse'));
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Painel do médico'));
     await tester.pumpAndSettle();
