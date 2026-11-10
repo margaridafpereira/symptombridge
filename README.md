@@ -35,7 +35,22 @@ dart run example/demo.dart     # one transcript in, assessment out
 dart test                      # both evaluation sets, report in eval/report.md
 ```
 
+## The language-model layer (built, waiting for a key)
+
+To understand how people actually talk, a model reads the transcript on top of the rules. It's free: Google's Gemini free tier, called through a small Cloudflare Worker ([worker/worker.js](worker/worker.js)) that keeps the key secret, only answers this site and only does this one task.
+
+Safety is in the code, not just the docs ([engine/test/merge_test.dart](engine/test/merge_test.dart)):
+
+- the model can **add** findings and red flags, never delete what the rules found; a disagreement becomes a note for the clinician;
+- every model finding must quote words that really are in the transcript, or it's thrown away;
+- the only thing it can take away is history that belongs to someone else ("o meu pai morreu de enfarte");
+- if the model is down or out of quota, the rules still answer.
+
+```bash
+SYMPTOMBRIDGE_API=https://symptombridge-api.<account>.workers.dev dart test   # adds the "rules + model" rows
+```
+
 ## Next
 
-- A language-model layer for understanding (colloquial words, vague answers, who the symptom belongs to), with the fixed red-flag rules kept on top so a model can never switch a red flag off.
+- Run the challenge set with the model and publish the before/after.
 - The two apps: patient side (voice, guided questions) and the clinician's live screen.

@@ -1,5 +1,5 @@
 ```
-Development set: 20 fictional cases
+Development set, rules: 20 fictional cases
   Findings recalled          100 %  (74/74)
   Findings not in the case   0 %  (0/74)
   Negations understood       100 %  (12/12)
@@ -10,7 +10,7 @@ Development set: 20 fictional cases
 ```
 
 ```
-Challenge set: 10 fictional cases
+Challenge set, rules: 10 fictional cases
   Findings recalled          44 %  (11/25)
   Findings not in the case   15 %  (2/13)
   Negations understood       0 %  (0/1)

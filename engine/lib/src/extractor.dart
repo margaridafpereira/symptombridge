@@ -9,10 +9,14 @@ class Utterance {
   final String text;
 }
 
+/// Who found it: the rules, the language model, or both agreeing.
+enum FindingSource { rules, model, both }
+
 /// One thing we learnt, with the words that show it.
 class Finding {
-  const Finding(this.concept, this.present, this.evidence);
+  const Finding(this.concept, this.present, this.evidence, [this.source = FindingSource.rules]);
   final Concept concept;
+  final FindingSource source;
 
   /// False when the patient denied it ("não tenho febre").
   final bool present;

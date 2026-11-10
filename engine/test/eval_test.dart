@@ -12,12 +12,21 @@ import 'package:test/test.dart';
 /// - `challenge.json` was written afterwards to break it (colloquial words,
 ///   vague answers, speech-recognition errors) and is never tuned against.
 ///   It only reports.
+///
+/// With SYMPTOMBRIDGE_API set to the Worker's URL, both sets run again with
+/// the language model on top, for the before/after comparison.
 void main() {
-  _run('Development set', '../eval/cases.json', enforce: true);
-  _run('Challenge set', '../eval/challenge.json', enforce: false);
+  _run('Development set, rules', '../eval/cases.json', enforce: true, fresh: true);
+  _run('Challenge set, rules', '../eval/challenge.json', enforce: false);
+  final api = Platform.environment['SYMPTOMBRIDGE_API'];
+  if (api != null && api.isNotEmpty) {
+    final model = WorkerUnderstander(Uri.parse(api));
+    _run('Development set, rules + model', '../eval/cases.json', enforce: true, understander: model);
+    _run('Challenge set, rules + model', '../eval/challenge.json', enforce: false, understander: model);
+  }
 }
 
-void _run(String name, String path, {required bool enforce}) {
+void _run(String name, String path, {required bool enforce, bool fresh = false, Understander? understander}) {
   final cases = (jsonDecode(File(path).readAsStringSync()) as List).cast<Map<String, dynamic>>();
   var expectedPresent = 0, foundPresent = 0, unexpected = 0, totalPresent = 0;
   var expectedAbsent = 0, foundAbsent = 0;
@@ -27,8 +36,9 @@ void _run(String name, String path, {required bool enforce}) {
 
   group(name, () {
     for (final c in cases) {
-      test('${c['id']} ${c['title']}', () {
-        final a = assess(c['transcript'] as String);
+      test('${c['id']} ${c['title']}', () async {
+        final a = await assessWith(c['transcript'] as String, understander);
+        if (a.modelError != null) problems.add('${c['id']}: model unavailable (${a.modelError}), rules only');
         final e = a.extraction;
         final present = (c['present'] as List).cast<String>();
         final absent = (c['absent'] as List).cast<String>();
@@ -92,7 +102,7 @@ ${problems.isEmpty ? '' : '  Misses:\n    ${problems.join('\n    ')}\n'}''';
       // ignore: avoid_print
       print(report);
       final out = File('../eval/report.md');
-      final previous = out.existsSync() && !enforce ? out.readAsStringSync() : '';
+      final previous = out.existsSync() && !fresh ? out.readAsStringSync() : '';
       out.writeAsStringSync('$previous```\n$report```\n\n');
     });
   });
