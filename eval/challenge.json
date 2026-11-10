@@ -1,0 +1,83 @@
+[
+  {
+    "id": "h01", "title": "Family history is not the patient's history", "mode": "intake",
+    "transcript": "O meu pai morreu de enfarte. Eu fiquei constipado na semana passada e agora dói-me o peito quando respiro fundo. Melhora quando me inclino para a frente.",
+    "present": ["runny_nose", "chest_pain", "pleuritic", "leaning_relief"],
+    "absent": [],
+    "notPresent": ["cardiac_history"],
+    "redFlags": [],
+    "diagnosis": "pericarditis"
+  },
+  {
+    "id": "h02", "title": "Colloquial Portuguese", "mode": "intake",
+    "transcript": "Ando com uma moinha na barriga e com a tripa solta desde sábado, e já deitei tudo fora duas vezes.",
+    "present": ["abdominal_pain", "diarrhea", "vomiting"],
+    "absent": [],
+    "redFlags": [],
+    "diagnosis": "gastroenteritis"
+  },
+  {
+    "id": "h03", "title": "Fever in the past, not now", "mode": "intake",
+    "transcript": "Tive febre na semana passada mas agora já não tenho. Ficou só a tosse com catarro.",
+    "present": ["cough", "sputum"],
+    "absent": ["fever"],
+    "redFlags": [],
+    "diagnosis": null
+  },
+  {
+    "id": "h04", "title": "Answers that are not yes or no", "mode": "consult",
+    "transcript": "Médico: Tem falta de ar?\nDoente: Às vezes, quando subo escadas.\nMédico: E dor no peito?\nDoente: Também, um aperto.",
+    "present": ["dyspnea", "exertional", "chest_pain"],
+    "absent": [],
+    "redFlags": ["acs"],
+    "diagnosis": "acs"
+  },
+  {
+    "id": "h05", "title": "Words outside the lexicon", "mode": "intake",
+    "transcript": "Estou com uma enxaqueca terrível, vejo luzes a piscar e não aguento a claridade. Estou agoniado.",
+    "present": ["headache", "photophobia", "nausea"],
+    "absent": [],
+    "redFlags": [],
+    "diagnosis": "migraine"
+  },
+  {
+    "id": "h06", "title": "Stroke told by a relative, in their words", "mode": "intake",
+    "transcript": "O meu marido de repente ficou com a cara à banda e não consegue levantar o braço.",
+    "present": ["sudden_onset", "face_droop", "limb_weakness"],
+    "absent": [],
+    "redFlags": ["stroke"],
+    "diagnosis": "stroke"
+  },
+  {
+    "id": "h07", "title": "Indirect suicidal thoughts", "mode": "consult",
+    "transcript": "Médico: Como tem dormido?\nDoente: Mal. Às vezes penso que era melhor não estar cá.",
+    "present": ["suicidal"],
+    "absent": [],
+    "redFlags": ["suicide"],
+    "diagnosis": null
+  },
+  {
+    "id": "h08", "title": "Local sting, not anaphylaxis", "mode": "intake",
+    "transcript": "Fui picada por uma abelha e tenho a mão inchada e vermelha, mas respiro bem.",
+    "present": ["allergen"],
+    "absent": [],
+    "redFlags": [],
+    "diagnosis": null
+  },
+  {
+    "id": "h09", "title": "Kidney pain and burning", "mode": "intake",
+    "transcript": "Tenho uma dor nos rins que me deixa a contorcer, e quando faço chichi arde.",
+    "present": ["flank_pain", "dysuria"],
+    "absent": [],
+    "redFlags": [],
+    "diagnosis": "renal_colic"
+  },
+  {
+    "id": "h10", "title": "Speech recognition error", "mode": "intake",
+    "transcript": "Tenho dor no peito e soares frios, estou muito mal disposto.",
+    "present": ["chest_pain", "sweating", "nausea"],
+    "absent": [],
+    "redFlags": ["acs"],
+    "diagnosis": "acs"
+  }
+]
