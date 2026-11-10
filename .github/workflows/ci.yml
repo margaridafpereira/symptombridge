@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Engine and evaluation
+        working-directory: engine
+        run: |
+          dart pub get
+          dart analyze
+          dart test --concurrency=1
+      - name: App
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test

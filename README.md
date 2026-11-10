@@ -4,9 +4,20 @@ The patient describes their symptoms out loud, before the appointment (waiting r
 
 > Portfolio project. Not a medical device. It never gives the patient a diagnosis; everything goes to a clinician, who decides.
 
-## Status: the engine, measured honestly
+**▶ Try it: [margaridafpereira.github.io/symptombridge](https://margaridafpereira.github.io/symptombridge/)** · straight to an example: [?caso=c01](https://margaridafpereira.github.io/symptombridge/?caso=c01)
 
-Right now this repo is the core engine (`engine/`, pure Dart): Portuguese speech in, findings / red flags / hypotheses out. Rules and an explicit knowledge base, no AI model yet, so it can't invent symptoms and every output points back to the patient's words.
+![The clinician's screen during a consultation](docs/consultation.png)
+
+## One app, two moments
+
+- **Consultation:** the device sits on the desk and listens. Tap *Médico* or *Doente* for who is speaking (the browser's speech recognition can't tell voices apart). The clinician's panel updates as they talk, and its suggested questions can be tapped straight into the conversation.
+- **Pre-visit:** in the waiting room or at home, the app interviews the patient: safety questions first (chest pain → does it spread to the arm? any sweating?), then whatever best separates the possibilities. Big yes/no buttons, or answer in your own words. If an emergency red flag fires, the patient is told what to do (alert staff, call 112), never why. At the end, *Enviar ao médico* opens the same clinician panel.
+
+Speech uses the browser's recognition (Chrome, Edge) in European Portuguese; anywhere else you can type, or load one of the fictional cases.
+
+## The engine, measured honestly
+
+The core (`engine/`, pure Dart) turns Portuguese speech into findings, red flags and hypotheses. Rules and an explicit knowledge base, no AI model yet, so it can't invent symptoms and every output points back to the patient's words.
 
 It's checked against fictional cases (`eval/`):
 
@@ -33,6 +44,7 @@ That's the point of measuring: a hand-written lexicon handles the textbook phras
 cd engine
 dart run example/demo.dart     # one transcript in, assessment out
 dart test                      # both evaluation sets, report in eval/report.md
+cd ../app && flutter run -d chrome
 ```
 
 ## The language-model layer (built, waiting for a key)
@@ -53,4 +65,4 @@ SYMPTOMBRIDGE_API=https://symptombridge-api.<account>.workers.dev dart test   # 
 ## Next
 
 - Run the challenge set with the model and publish the before/after.
-- The two apps: patient side (voice, guided questions) and the clinician's live screen.
+- Patient and clinician on different devices (a small sync service), and English for the interface.
