@@ -7,10 +7,13 @@
 //
 // Setup (Cloudflare dashboard → the Worker):
 //   Settings → Variables and Secrets → Secret GEMINI_API_KEY
-//   optional Text MODEL (default below), ALLOWED_ORIGINS (comma separated)
+//   optional Text MODEL (forces one model), ALLOWED_ORIGINS (comma separated)
 // Nothing is stored or logged.
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+// Model names are retired over time, so try an alias first and, if Google
+// says it doesn't exist, pick a Flash model from the ones this key can use.
+const PREFERRED_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+const API = 'https://generativelanguage.googleapis.com/v1beta';
 const DEFAULT_ORIGINS = 'https://margaridafpereira.github.io,http://localhost:8765';
 const MAX_TRANSCRIPT = 6000; // characters, about ten minutes of speech
 const MAX_CONCEPTS = 150;
@@ -76,18 +79,41 @@ export default {
       list.push(`${c.id}: ${c.label}`);
     }
 
-    const model = env.MODEL || DEFAULT_MODEL;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
-        contents: [{ role: 'user', parts: [{ text: `CONCEPTS:\n${list.join('\n')}\n\nTRANSCRIPT:\n${transcript}` }] }],
-        generationConfig: { temperature: 0, responseMimeType: 'application/json' },
-      }),
+    const body = JSON.stringify({
+      systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
+      contents: [{ role: 'user', parts: [{ text: `CONCEPTS:
+${list.join('
+')}
+
+TRANSCRIPT:
+${transcript}` }] }],
+      generationConfig: { temperature: 0, responseMimeType: 'application/json' },
     });
+    const call = (m) =>
+      fetch(`${API}/models/${m}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+        body,
+      });
+
+    const candidates = env.MODEL ? [env.MODEL] : [...PREFERRED_MODELS];
+    let model;
+    let response;
+    for (let i = 0; i < candidates.length; i++) {
+      model = candidates[i];
+      response = await call(model);
+      if (response.status !== 404) break;
+      // Last resort: ask Google which models this key can use and take a Flash one.
+      if (i === candidates.length - 1 && !env.MODEL) {
+        const found = await availableFlash(env.GEMINI_API_KEY, candidates);
+        if (found) candidates.push(found);
+      }
+    }
     if (response.status === 429) return reply(429, { error: 'free quota used up for now' });
-    if (!response.ok) return reply(502, { error: `model error ${response.status}` });
+    if (!response.ok) {
+      const detail = await response.text();
+      return reply(502, { error: `model error ${response.status} (${model}): ${detail.slice(0, 200)}` });
+    }
 
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? '';
@@ -99,3 +125,16 @@ export default {
     }
   },
 };
+
+async function availableFlash(key, tried) {
+  const r = await fetch(`${API}/models?pageSize=200`, { headers: { 'x-goog-api-key': key } });
+  if (!r.ok) return null;
+  const { models = [] } = await r.json();
+  const usable = models
+    .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+    .map((m) => m.name.replace(/^models\//, ''))
+    .filter((name) => name.includes('flash') && !name.includes('image') && !name.includes('tts') && !tried.includes(name));
+  // Newest first: names carry the version (gemini-3-flash before gemini-2.5-flash).
+  usable.sort().reverse();
+  return usable.find((n) => !n.includes('preview') && !n.includes('exp')) || usable[0] || null;
+}
