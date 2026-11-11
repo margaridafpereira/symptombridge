@@ -81,12 +81,7 @@ export default {
 
     const body = JSON.stringify({
       systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
-      contents: [{ role: 'user', parts: [{ text: `CONCEPTS:
-${list.join('
-')}
-
-TRANSCRIPT:
-${transcript}` }] }],
+      contents: [{ role: 'user', parts: [{ text: `CONCEPTS:\n${list.join('\n')}\n\nTRANSCRIPT:\n${transcript}` }] }],
       generationConfig: { temperature: 0, responseMimeType: 'application/json' },
     });
     const call = (m) =>
