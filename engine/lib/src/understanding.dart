@@ -38,7 +38,7 @@ abstract class Understander {
 
 /// Gemini behind the SymptomBridge Cloudflare Worker (worker/worker.js).
 class WorkerUnderstander implements Understander {
-  WorkerUnderstander(this.endpoint, {http.Client? client, this.timeout = const Duration(seconds: 25)})
+  WorkerUnderstander(this.endpoint, {http.Client? client, this.timeout = const Duration(seconds: 40)})
       : _client = client ?? http.Client();
 
   final Uri endpoint;

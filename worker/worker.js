@@ -79,17 +79,29 @@ export default {
       list.push(`${c.id}: ${c.label}`);
     }
 
-    const body = JSON.stringify({
-      systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
-      contents: [{ role: 'user', parts: [{ text: `CONCEPTS:\n${list.join('\n')}\n\nTRANSCRIPT:\n${transcript}` }] }],
-      generationConfig: { temperature: 0, responseMimeType: 'application/json' },
-    });
-    const call = (m) =>
+    // Newer Flash models "think" before answering, which can take tens of
+    // seconds. This task is lookup, not reasoning, so turn thinking off.
+    const request_ = (thinkingOff) =>
+      JSON.stringify({
+        systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
+        contents: [{ role: 'user', parts: [{ text: `CONCEPTS:\n${list.join('\n')}\n\nTRANSCRIPT:\n${transcript}` }] }],
+        generationConfig: {
+          temperature: 0,
+          responseMimeType: 'application/json',
+          ...(thinkingOff ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+        },
+      });
+    const post = (m, body) =>
       fetch(`${API}/models/${m}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
         body,
       });
+    // Some models refuse a thinking budget of 0; ask again without it.
+    const call = async (m) => {
+      const r = await post(m, request_(true));
+      return r.status === 400 ? post(m, request_(false)) : r;
+    };
 
     const candidates = env.MODEL ? [env.MODEL] : [...PREFERRED_MODELS];
     let model;
