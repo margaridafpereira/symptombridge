@@ -103,6 +103,7 @@ class MergeReport {
   final l = lang.pick;
   final findings = Map.of(rules.findings);
   final text = normalize(transcript).replaceAll(RegExp(r'\s+'), ' ');
+  final turns = parseTranscript(transcript);
 
   for (final m in model) {
     final concept = conceptsById[m.id];
@@ -112,6 +113,7 @@ class MergeReport {
       continue;
     }
     final existing = findings[m.id];
+    final evidence = _withQuestion(m.quote, turns);
 
     if (m.aboutOther) {
       if (concept.kind == Kind.history && existing != null && existing.present) {
@@ -125,7 +127,7 @@ class MergeReport {
 
     final present = m.present && !m.past;
     if (existing == null) {
-      final f = Finding(concept, present, m.quote, FindingSource.model);
+      final f = Finding(concept, present, evidence, FindingSource.model);
       findings[m.id] = f;
       report.added.add(f);
       if (m.present && m.past) {
@@ -138,7 +140,7 @@ class MergeReport {
       report.confirmed.add(f);
     } else if (!existing.present && present) {
       // Present beats denied: missing a symptom is the worse error.
-      final f = Finding(concept, true, m.quote, FindingSource.model);
+      final f = Finding(concept, true, evidence, FindingSource.model);
       findings[m.id] = f;
       report.added.add(f);
       report.notes.add(l('${concept.pt}: as regras leram negado, o modelo leu presente («${m.quote}»).',
@@ -162,4 +164,21 @@ class MergeReport {
     ),
     report,
   );
+}
+
+/// A bare "yes" or "a little" means nothing on the clinician's screen. When
+/// the model quotes only a short answer, show the question it answers too,
+/// as the rules do: "Any blood when you cough? A little."
+String _withQuestion(String quote, List<Utterance> turns) {
+  final q = normalize(quote).trim();
+  for (var i = 1; i < turns.length; i++) {
+    final answer = turns[i];
+    final question = turns[i - 1];
+    if (answer.speaker != Speaker.patient || question.speaker != Speaker.clinician) continue;
+    if (!question.text.trim().endsWith('?')) continue;
+    final a = normalize(answer.text).trim();
+    final short = a.split(RegExp(r'\s+')).length <= 4;
+    if (short && a.contains(q)) return '${question.text.trim()} ${answer.text.trim()}';
+  }
+  return quote;
 }

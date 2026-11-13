@@ -86,4 +86,25 @@ void main() {
     expect(a.modelError, 'free quota used up');
     expect(flags(a), contains('acs'));
   });
+
+  test('a model quote of just "a little" shows the question it answers, and the cough is not invented', () async {
+    const t = 'Patient: tightness in my chest\nDoctor: Is it worse when you breathe in deeply?\nPatient: yes\n'
+        'Doctor: Any blood when you cough?\nPatient: a little';
+    final a = await assessWith(t, FakeModel(const [
+      ModelFinding('hemoptysis', present: true, quote: 'a little'),
+      ModelFinding('pleuritic', present: true, quote: 'yes'),
+    ]), lang: Lang.en);
+    final e = a.extraction;
+    expect(e.findings['hemoptysis']!.evidence, contains('blood when you cough? a little'));
+    expect(e.findings['pleuritic']!.evidence, contains('breathe in? yes'));
+    expect(e.mentioned('cough'), isFalse, reason: 'nobody said they have a cough');
+  });
+
+  test('when only the model reads a short answer, the question is shown with it', () async {
+    const t = 'Patient: My chest hurts.\nDoctor: Does breathing make it worse?\nPatient: Yes';
+    final a = await assessWith(t, FakeModel(const [ModelFinding('pleuritic', present: true, quote: 'Yes')]), lang: Lang.en);
+    final f = a.extraction.findings['pleuritic']!;
+    expect(f.source, FindingSource.model);
+    expect(f.evidence, 'Does breathing make it worse? Yes');
+  });
 }

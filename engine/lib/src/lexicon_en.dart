@@ -19,7 +19,7 @@ const englishPhrases = <String, List<String>>{
   ],
   'pleuritic': [
     r'hurts? (more )?(when|if) (i |he |she )?(breathe|breathing|take a deep breath|cough)',
-    r'(pain|worse) (on|when) breathing (in|deeply)', r'deep breaths? hurts?', r'worse when (i )?breathe in',
+    r'(pain|worse) (on|when) breathing (in|deeply)', r'deep breaths? hurts?', r'worse when (i |you )?breathe in',
   ],
   'leaning_relief': [r'(better|eases|easier|relieved)\w* .{0,25}(lean\w* forward|sit\w* forward)'],
   'palpation_pain': [r'hurts? (more )?(when|if) (i |you )?(press|touch|push)\w*', r'tender to (the )?touch', r'sore when (i )?press'],
@@ -43,15 +43,16 @@ const englishPhrases = <String, List<String>>{
   ],
   'neck_stiffness': [r'(stiff|rigid) neck', r'neck (is )?(stiff|rigid)', r'can.?t (bend|move) (my |his |her )?neck', r'neck stiffness'],
   'photophobia': [
-    r'photophobia', r'light (hurts|bothers|is too bright)', r'can.?t (stand|bear) (the )?light', r'(sensitive|sensitivity) to light',
+    r'photophobia', r'light (hurts|bothers?|is too bright)', r'can.?t (stand|bear) (the )?light', r'(sensitive|sensitivity) to light',
   ],
   'face_droop': [
     r'(face|mouth|smile) (is |has )?(droop\w*|lopsided|crooked|twisted|fallen|dropped)', r'droop\w* (face|mouth)',
-    r'(one side|half) of (his|her|my|the) face',
+    r'(one side|half) of (his|her|my|the) face', r'drooping of (the|his|her|your) face',
   ],
   'limb_weakness': [
     r'(arm|leg|hand) .{0,20}(weak|numb|no strength|heavy|can.?t (move|lift)|won.?t move)',
     r'can.?t (lift|raise|move) (his|her|my|the) (arm|leg|hand)', r'lost (the |all )?strength',
+    r'weakness in (an|your|his|her|the|my) (arm|leg|hand)',
   ],
   'speech_difficulty': [
     r'(speech|words|talking) .{0,15}(slurr\w*|garbled|strange|jumbled|muddled)', r'slurr\w* (his |her |my )?(speech|words)',
@@ -69,14 +70,17 @@ const englishPhrases = <String, List<String>>{
   'wheeze': [r'wheez\w*', r'whistl\w* (when|in) (i breathe|my chest)', r'chest (is )?whistling'],
   'orthopnea': [
     r'can.?t (lie|sleep) (flat|down)', r'(sleep|sleeping) (on|with) (two|three|several|more|extra) pillows',
-    r'wake (up )?(gasping|breathless|short of breath)',
+    r'wake (up )?(gasping|breathless|short of breath)', r'breathless (when )?lying (flat|down)',
   ],
   'cough': [r'\bcough\w*'],
   'sputum': [r'phlegm', r'sputum', r'mucus', r'coughing up (green|yellow)'],
-  'hemoptysis': [r'cough\w* (up )?(some )?blood', r'blood in (my |the )?(phlegm|sputum|spit)'],
+  'hemoptysis': [r'cough\w* (up )?(some )?blood', r'blood in (my |the )?(phlegm|sputum|spit)', r'blood when (i |you |he |she )?cough'],
   'sore_throat': [r'sore throat', r'throat (is )?(sore|hurts|scratchy|painful)'],
   'runny_nose': [r'(runny|blocked|stuffy|bunged up) nose', r'nose (is )?(running|blocked|stuffed)', r'(caught|got|have) a (bad )?cold', r'sneez\w*'],
-  'swelling_face_throat': [r'(lips|tongue|throat|face) .{0,15}(swollen|swelling|closing)', r'swollen (lips|tongue|face)'],
+  'swelling_face_throat': [
+    r'(lips|tongue|throat|face) .{0,15}(swollen|swelling|closing)', r'swollen (lips|tongue|face)',
+    r'swelling (of|in) (the |your |his |her |my )?(lips|tongue|throat|face)',
+  ],
   'allergen': [r'\bstung\b', r'\bbitten\b', r'after (eating )?(prawns|shellfish|peanuts|nuts)', r'allerg\w*'],
 
   // General
@@ -102,16 +106,19 @@ const englishPhrases = <String, List<String>>{
   ],
   'rlq_pain': [r'(lower right|bottom right|right lower)', r'(low|down) on the right', r'right side,? low down'],
   'migration': [
-    r'start\w* .{0,30}(belly button|navel|middle) .{0,40}(moved|went|shifted|now)', r'(belly button|navel) .{0,30}(then|now) .{0,20}right',
+    r'start\w* .{0,30}(belly button|navel|middle) .{0,40}(moved|went|shifted|now)', r'(belly button|navel) .{0,30}(then|now) .{0,20}right', r'(navel|belly button) and then (move|moved|went)',
   ],
   'ruq_pain': [r'under (my |the )?(right )?ribs', r'(upper right|right upper|top right)'],
   'fatty_meal': [r'after (eating )?(a )?((fatty|greasy|fried|heavy|big) ){1,2}(meal|food|dinner|lunch)', r'after (a )?(takeaway|fry-up)'],
   'flank_pain': [r'(pain|hurts|ache) .{0,40}(kidney|loin|side of (my|the) back|flank)', r'renal colic'],
-  'blood_urine': [r'blood in (my |the )?(urine|pee|wee)', r'(urine|pee|wee) .{0,10}(red|bloody|pink|cola)'],
-  'dysuria': [r'(burns|burning|stings|stinging|hurts|pain) (when|while) (i )?(pee|wee|urinat)\w*', r'painful (urination|to pee)'],
+  'blood_urine': [r'blood in (my |the |your )?(urine|pee|wee)', r'(urine|pee|wee) .{0,10}(red|bloody|pink|cola)'],
+  'dysuria': [
+    r'(burns?|burning|stings?|stinging|hurts|pain) (when|while) (i |you )?(pee|wee|urinat|pass urine)\w*',
+    r'painful (urination|to pee)',
+  ],
   'frequency': [
     r'(peeing|weeing|urinating|going to the (toilet|loo|bathroom)) .{0,15}(all the time|a lot|constantly|every hour|often)',
-    r'(need|needing) to (pee|wee|go) (all the time|constantly)',
+    r'(need|needing) to (pee|wee|go) (all the time|constantly)', r'passing urine (more )?often',
   ],
   'nausea': [r'nause\w*', r'(feel|feeling|felt) sick', r'queasy', r'want to (be sick|throw up)'],
   'vomiting': [r'(?<!want to )(vomit(ed|ing|s)?\b|threw up|throwing up|been sick|being sick|was sick)'],
@@ -132,5 +139,5 @@ const englishPhrases = <String, List<String>>{
   'cv_risk': [r'\bsmok(e|er|es|ing)\b', r'high blood pressure', r'hypertens\w*', r'diabet\w*', r'cholesterol'],
   'asthma_history': [r'asthma\w*', r'inhaler'],
   'copd_history': [r'\bcopd\b', r'emphysema', r'chronic bronchitis'],
-  'hf_history': [r'heart failure', r'weak heart'],
+  'hf_history': [r'heart failure', r'weak heart', r'heart is weak'],
 };

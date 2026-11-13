@@ -65,13 +65,13 @@ const concepts = <Concept>[
     r'(quando|ao|a|com o) (subir|andar|caminhar|correr|fazer esforco)', r'esforco', r'(subo|subir) (as )?escadas',
   ], kind: Kind.modifier, askEn: 'Does it come on with effort, like stairs?', askPt: 'Aparece com o esforço, como subir escadas?'),
   Concept('pleuritic', 'Worse on breathing in', 'Piora ao respirar fundo', [
-    r'doi (mais )?(ao|quando|se) (respir|inspir|tossir|tusso)\w*', r'dor ao respirar fundo', r'(respirar|inspirar) fundo doi',
+    r'doi (mais )?(ao|quando|se) (respir|inspir|tossir|tusso)\w*', r'dor ao respirar fundo', r'piora (quando|ao|se) respir\w* fundo', r'(respirar|inspirar) fundo doi',
   ], kind: Kind.modifier, askEn: 'Is it worse when you breathe in deeply?', askPt: 'Piora quando respira fundo?'),
   Concept('leaning_relief', 'Better leaning forward', 'Alivia inclinado para a frente', [
     r'(melhora|alivia|passa)\w* .{0,20}(inclin\w*|sentad\w* para a frente|para a frente)',
   ], kind: Kind.modifier, askEn: 'Is it better leaning forward?', askPt: 'Alivia quando se inclina para a frente?'),
   Concept('palpation_pain', 'Hurts when pressed', 'Dói ao carregar', [
-    r'doi (mais )?(quando|ao|se) (carrego|toco|aperto|carregar|tocar|apertar|carregam)',
+    r'doi (mais )?(quando|ao|se) (carrego|carrega|toco|aperto|carregar|tocar|apertar|carregam)',
   ], kind: Kind.modifier, askEn: 'Does it hurt when you press on it?', askPt: 'Dói quando carrega no sítio?'),
   Concept('heartburn', 'Heartburn', 'Azia', [
     r'azia', r'queimor', r'ardor (no estomago|no peito)', r'sabor (acido|amargo)', r'refluxo',
@@ -103,7 +103,7 @@ const concepts = <Concept>[
   ], kind: Kind.modifier, negationInside: true, askEn: 'Is it the worst headache of your life?', askPt: 'É a pior dor de cabeça da sua vida?'),
   Concept('neck_stiffness', 'Stiff neck', 'Pescoço rígido', [
     r'pescoco (rigido|preso|duro|tenso)', r'rigidez (do|no|de) pescoco', r'nao consigo (dobrar|baixar|mexer) o pescoco',
-  ], snomed: '161882006', negationInside: true, askEn: 'Can you bend your neck forward?', askPt: 'Consegue dobrar o pescoço para a frente?'),
+  ], snomed: '161882006', negationInside: true, askEn: 'Is your neck stiff?', askPt: 'Tem o pescoço rígido?'),
   Concept('photophobia', 'Light hurts', 'A luz incomoda', [
     r'fotofobia', r'(a )?luz (me )?(incomoda|faz doer|irrita|faz mal)', r'incomoda(-me)? a luz', r'nao suporto a luz',
   ], snomed: '409668002', negationInside: true, askEn: 'Does light bother you?', askPt: 'A luz incomoda-o?'),
@@ -112,9 +112,10 @@ const concepts = <Concept>[
   ], askEn: 'Any drooping of the face?', askPt: 'Notou a cara ou a boca descaída?'),
   Concept('limb_weakness', 'Weakness in an arm or leg', 'Fraqueza num braço ou perna', [
     r'(braco|perna|mao) .{0,20}(sem forca|fraco|fraca|dormente|nao (mexe|consigo mexer))', r'perdi (a )?forca',
+    r'falta de forca (num|no|na|nos|nas) (braco|perna|mao)',
   ], negationInside: true, askEn: 'Any weakness in an arm or leg?', askPt: 'Tem falta de força num braço ou perna?'),
   Concept('speech_difficulty', 'Trouble speaking', 'Dificuldade em falar', [
-    r'(fala|falar|palavras) .{0,15}(enrolad\w*|arrastad\w*|dificuldade|estranh\w*|trocad\w*)', r'nao consigo (encontrar as palavras|falar bem)',
+    r'(fala|falar|palavras) .{0,15}(enrolad\w*|arrastad\w*|dificuldade|estranh\w*|trocad\w*)', r'dificuldade (em|a) falar', r'nao consigo (encontrar as palavras|falar bem)',
   ], snomed: '8011004', negationInside: true, askEn: 'Any trouble speaking?', askPt: 'Tem dificuldade em falar?'),
   Concept('confusion', 'Confusion', 'Confusão', [
     r'confus[oa]', r'desorientad\w*', r'nao (sabe|sei) onde (esta|estou)', r'(muito )?sonolent\w*',
@@ -131,18 +132,18 @@ const concepts = <Concept>[
   Concept('cannot_finish_sentences', "Can't finish sentences", 'Não consegue acabar frases', [
     r'nao consigo (terminar|acabar) (as )?frases', r'nao consigo falar (de|com) (tanta )?falta de ar',
   ], negationInside: true),
-  Concept('wheeze', 'Wheezing', 'Pieira', [r'pieira', r'chiadeira', r'(peito|respiracao) a chiar', r'assobi\w*'],
+  Concept('wheeze', 'Wheezing', 'Pieira', [r'pieira', r'chiadeira', r'(peito|respiracao) a chiar', r'chiar a respirar', r'assobi\w*'],
       snomed: '56018004', askEn: 'Any wheezing?', askPt: 'Ouve um chiar a respirar?'),
   Concept('orthopnea', 'Breathless lying flat', 'Falta de ar deitado', [
-    r'(nao consigo|custa(-me)?) (estar |ficar )?deitad\w*', r'(dormir|durmo) com (varias|mais|duas|tres) almofadas', r'acordo (sem ar|com falta de ar)',
+    r'(nao consigo|custa(-me)?) (estar |ficar )?deitad\w*', r'(dormir|durmo) com (varias|mais|duas|tres) almofadas', r'acordo (sem ar|com falta de ar)', r'falta de ar (quando|se) (se )?deit\w*',
   ], negationInside: true, askEn: 'Are you breathless lying flat?', askPt: 'Tem falta de ar quando se deita?'),
   Concept('cough', 'Cough', 'Tosse', [r'\btosse', r'\btossir', r'\btusso'], snomed: '49727002', askEn: 'Any cough?', askPt: 'Tem tosse?'),
   Concept('sputum', 'Phlegm', 'Expetoração', [r'expetora\w*', r'catarro', r'escarr\w*', r'fleuma'],
       askEn: 'Are you coughing up phlegm?', askPt: 'Tem expetoração?'),
   Concept('hemoptysis', 'Coughing up blood', 'Tosse com sangue', [
-    r'(tosse|tossir|tusso|expetora\w*|catarro|escarr\w*) .{0,20}sangue', r'sangue (na|no) (tosse|catarro|expetoracao)',
+    r'(tosse|tossir|tossiu|tusso|expetora\w*|catarro|escarr\w*) .{0,20}sangue', r'sangue (na|no) (tosse|catarro|expetoracao)',
   ], snomed: '66857006', askEn: 'Any blood when you cough?', askPt: 'Já tossiu sangue?'),
-  Concept('sore_throat', 'Sore throat', 'Dor de garganta', [r'dor de garganta', r'garganta .{0,10}(doi|inflamada|irritada|a doer)'],
+  Concept('sore_throat', 'Sore throat', 'Dor de garganta', [r'dor de garganta', r'garganta .{0,10}(doi|inflamada|irritada|a doer)', r'doi(-me|-lhe)? a garganta'],
       snomed: '162397003', askEn: 'Any sore throat?', askPt: 'Dói-lhe a garganta?'),
   Concept('runny_nose', 'Runny or blocked nose', 'Nariz entupido ou a pingar', [
     r'nariz (entupido|a pingar|a escorrer)', r'corrimento nasal', r'constipad\w*', r'ranho',
@@ -178,7 +179,7 @@ const concepts = <Concept>[
     r'dor (no|do) (lado direito|lado esquerdo) da barriga', r'doi(-me|-lhe)? a barriga', r'dor (a volta|perto) do umbigo',
   ], snomed: '21522001', askEn: 'Any tummy pain?', askPt: 'Tem dor de barriga?'),
   Concept('rlq_pain', 'Pain low on the right', 'Dor em baixo à direita', [
-    r'(lado direito|direita)[ ,].{0,25}(em baixo|parte de baixo|fundo da barriga)', r'em baixo (a|do lado) direit\w*', r'fossa iliaca direita',
+    r'(lado direito|direita)[ ,].{0,25}(em baixo|parte de baixo|fundo da barriga)', r'em baixo,? (a|do lado) direit\w*', r'fossa iliaca direita',
   ], kind: Kind.modifier, askEn: 'Is the pain low on the right side?', askPt: 'A dor é em baixo, do lado direito?'),
   Concept('migration', 'Pain moved from the navel', 'A dor começou no umbigo e mudou de sítio', [
     r'comec\w* .{0,30}umbigo .{0,40}(passou|mudou|foi|desceu)', r'umbigo .{0,30}(depois|agora) .{0,20}(direita|lado direito)',
@@ -190,14 +191,14 @@ const concepts = <Concept>[
     r'(depois|apos) (de )?(comer|uma refeicao|o jantar|o almoco) .{0,25}(gordur\w*|frit\w*|pesad\w*)', r'depois de (fritos|comida gordurosa)',
   ], kind: Kind.modifier, askEn: 'Did it start after a fatty meal?', askPt: 'Começou depois de uma refeição gordurosa?'),
   Concept('flank_pain', 'Pain in the side of the back', 'Dor nas costas, de lado', [
-    r'(dor|doi) .{0,40}(rins|rim|lado das costas|costas de lado|zona lombar de um lado)', r'colica renal',
+    r'(dor|doi) .{0,40}(rins|rim|lado das costas|costas de lado|zona lombar de um lado)', r'colica renal', r'costas,? de um lado',
   ], askEn: 'Is the pain in the side of the back?', askPt: 'A dor é nas costas, de um lado?'),
   Concept('blood_urine', 'Blood in urine', 'Sangue na urina', [r'sangue na urina', r'urina .{0,10}(com sangue|vermelha|cor de coca)'],
       askEn: 'Any blood in your urine?', askPt: 'Viu sangue na urina?'),
   Concept('dysuria', 'Pain on passing urine', 'Dor ao urinar', [r'(arde|ardor|dor|doi) (a|ao|quando) urin\w*', r'custa(-me)? (a )?urinar'],
       snomed: '49650001', askEn: 'Does it burn when you pass urine?', askPt: 'Arde quando urina?'),
   Concept('frequency', 'Passing urine often', 'Urinar muitas vezes', [
-    r'(urinar|fazer chichi|(vou|ido|ir) a casa de banho) .{0,15}(muitas vezes|toda a hora|a toda a hora|de hora a hora)', r'vontade constante de urinar',
+    r'(urinar|fazer chichi|(vou|ido|ir) a casa de banho) .{0,15}(muitas vezes|toda a hora|a toda a hora|de hora a hora)', r'vontade constante de urinar', r'urin\w* muitas vezes',
   ], askEn: 'Are you passing urine more often?', askPt: 'Tem urinado muitas vezes?'),
   Concept('nausea', 'Nausea', 'Náuseas', [r'nause\w*', r'enjo\w*', r'agoniad\w*', r'vontade de vomitar'],
       snomed: '422587007', askEn: 'Any nausea?', askPt: 'Tem náuseas?'),
@@ -205,7 +206,7 @@ const concepts = <Concept>[
       snomed: '422400008', askEn: 'Any vomiting?', askPt: 'Tem vomitado?'),
   Concept('diarrhea', 'Diarrhoea', 'Diarreia', [r'diarreia', r'(fezes|coco) (liquid\w*|mole\w*)', r'solt[oa] dos intestinos'],
       snomed: '62315008', askEn: 'Any diarrhoea?', askPt: 'Tem diarreia?'),
-  Concept('melena', 'Black stools', 'Fezes pretas', [r'(fezes|coco) (pretas?|negras?|escuras?|cor de alcatrao)'],
+  Concept('melena', 'Black stools', 'Fezes pretas', [r'(fezes|coco) (estao |sao )?(pretas?|negras?|escuras?|cor de alcatrao)'],
       snomed: '2901004', askEn: 'Any black stools?', askPt: 'As fezes estão pretas?'),
   Concept('hematemesis', 'Vomiting blood', 'Vómito com sangue', [r'vomit\w* .{0,10}sangue', r'sangue no vomito'],
       snomed: '8765009', askEn: 'Any blood in the vomit?', askPt: 'Vomitou sangue?'),

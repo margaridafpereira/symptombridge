@@ -171,19 +171,33 @@ bool _negated(String norm, int start, _Grammar g) {
   return g.negation.hasMatch(window);
 }
 
-List<Finding> _match(String text, Lang lang, {bool? forcePresent}) {
+List<Finding> _match(String text, Lang lang, {bool? forcePresent}) => [for (final (f, _, _) in _spans(text, lang, forcePresent: forcePresent)) f];
+
+/// Matches with where they are in [text].
+List<(Finding, int, int)> _spans(String text, Lang lang, {bool? forcePresent}) {
   final norm = normalize(text);
   final g = _grammar[lang]!;
-  final out = <Finding>[];
+  final out = <(Finding, int, int)>[];
   for (final MapEntry(key: concept, value: patterns) in _compiled[lang]!.entries) {
     for (final re in patterns) {
       for (final m in re.allMatches(norm)) {
         final present = forcePresent ?? (concept.negationInside || !_negated(norm, m.start, g));
-        out.add(Finding(concept, present, text.substring(m.start, m.end)));
+        out.add((Finding(concept, present, text.substring(m.start, m.end)), m.start, m.end));
       }
     }
   }
   return out;
+}
+
+/// The concepts a clinician's question asks about. A match that sits inside
+/// a longer one is only context: in "Any blood when you cough?" the yes or no
+/// is about the blood, not about having a cough.
+List<Finding> questionFindings(String question, Lang lang, {required bool answer}) {
+  final spans = _spans(question, lang, forcePresent: answer);
+  return [
+    for (final (f, s, e) in spans)
+      if (!spans.any((o) => o.$1.concept != f.concept && o.$2 <= s && o.$3 >= e && (o.$3 - o.$2) > (e - s))) f,
+  ];
 }
 
 Extraction extract(List<Utterance> turns, {Lang lang = Lang.pt}) {
@@ -204,7 +218,7 @@ Extraction extract(List<Utterance> turns, {Lang lang = Lang.pt}) {
     final answer = normalize(turns[i + 1].text);
     final bool? yes = g.yes.hasMatch(answer) ? true : (g.no.hasMatch(answer) ? false : null);
     if (yes == null) continue;
-    for (final f in _match(t.text, lang, forcePresent: yes)) {
+    for (final f in questionFindings(t.text, lang, answer: yes)) {
       put(Finding(f.concept, yes, '${f.evidence}? ${turns[i + 1].text}'));
     }
   }
