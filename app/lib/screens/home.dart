@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme.dart';
 import '../clinician/clinician_screens.dart';
+import '../lang.dart';
+import '../theme.dart';
 import 'intake_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,42 +10,54 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(actions: const [LangButton()]),
         body: SafeArea(
+          top: false,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
               child: ListView(padding: const EdgeInsets.all(24), children: [
-                const SizedBox(height: 24),
                 const Row(children: [
                   Icon(Icons.record_voice_over, color: C.primary, size: 32),
                   SizedBox(width: 12),
                   Flexible(child: Text('SymptomBridge', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800))),
                 ]),
                 const SizedBox(height: 12),
-                const Text(
-                  'Conte-nos o que sente, por voz ou por escrito, antes da consulta. O médico recebe as suas '
-                  'respostas organizadas e fica a saber o que é mais importante.',
-                  style: TextStyle(fontSize: 16, color: C.muted, height: 1.4),
+                Text(
+                  context.tr(
+                    'Conte-nos o que sente, por voz ou por escrito, antes da consulta. O médico recebe as suas '
+                        'respostas organizadas e fica a saber o que é mais importante.',
+                    'Tell us how you feel before your appointment, by voice or in writing. The doctor gets your '
+                        'answers organised and knows what matters most.',
+                  ),
+                  style: const TextStyle(fontSize: 16, color: C.muted, height: 1.4),
                 ),
                 const SizedBox(height: 28),
                 _ModeCard(
                   icon: Icons.chat_outlined,
-                  title: 'Começar a pré-consulta',
-                  text: 'Algumas perguntas simples, em poucos minutos. No fim, as respostas seguem para o médico.',
+                  title: context.tr('Começar a pré-consulta', 'Start the pre-visit questions'),
+                  text: context.tr(
+                    'Algumas perguntas simples, em poucos minutos. No fim, as respostas seguem para o médico.',
+                    'A few simple questions, in a few minutes. At the end, your answers go to the doctor.',
+                  ),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const IntakeScreen())),
                 ),
                 const SizedBox(height: 28),
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(color: C.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: C.line)),
-                  child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Icon(Icons.shield_outlined, color: C.muted),
-                    SizedBox(width: 10),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Icon(Icons.shield_outlined, color: C.muted),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Projeto de portefólio, não é um dispositivo médico. As suas respostas vão para um '
-                        'profissional, que decide. Use casos fictícios, não dados reais de saúde.',
-                        style: TextStyle(color: C.muted, fontSize: 13, height: 1.4),
+                        context.tr(
+                          'Projeto de portefólio, não é um dispositivo médico. As suas respostas vão para um '
+                              'profissional, que decide. Use casos fictícios, não dados reais de saúde.',
+                          'A portfolio project, not a medical device. Your answers go to a professional, who '
+                              'decides. Use made-up cases, not real health data.',
+                        ),
+                        style: const TextStyle(color: C.muted, fontSize: 13, height: 1.4),
                       ),
                     ),
                   ]),
@@ -53,7 +66,7 @@ class HomeScreen extends StatelessWidget {
                 Center(
                   child: TextButton.icon(
                     icon: const Icon(Icons.badge_outlined),
-                    label: const Text('Área do profissional de saúde'),
+                    label: Text(context.tr('Área do profissional de saúde', 'Healthcare professionals')),
                     onPressed: () => openClinicianArea(context),
                   ),
                 ),

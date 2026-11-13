@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'concepts.dart';
 import 'extractor.dart';
+import 'lang.dart';
 
 /// What a language model read in the transcript, before we trust it.
 class ModelFinding {
@@ -97,8 +98,9 @@ class MergeReport {
 /// - the one exception is history attributed to someone else, which stops
 ///   counting as the patient's;
 /// - every model finding must quote words that really are in the transcript.
-(Extraction, MergeReport) merge(Extraction rules, List<ModelFinding> model, String transcript) {
+(Extraction, MergeReport) merge(Extraction rules, List<ModelFinding> model, String transcript, {Lang lang = Lang.pt}) {
   final report = MergeReport();
+  final l = lang.pick;
   final findings = Map.of(rules.findings);
   final text = normalize(transcript).replaceAll(RegExp(r'\s+'), ' ');
 
@@ -115,7 +117,8 @@ class MergeReport {
       if (concept.kind == Kind.history && existing != null && existing.present) {
         findings.remove(m.id);
         report.reattributed.add(existing);
-        report.notes.add('${concept.en}: about someone else («${m.quote}»), not counted as the patient\'s.');
+        report.notes.add(l('${concept.pt}: refere-se a outra pessoa («${m.quote}»), não conta como do doente.',
+            '${concept.en}: about someone else («${m.quote}»), not counted as the patient\'s.'));
       }
       continue;
     }
@@ -125,7 +128,10 @@ class MergeReport {
       final f = Finding(concept, present, m.quote, FindingSource.model);
       findings[m.id] = f;
       report.added.add(f);
-      if (m.present && m.past) report.notes.add('${concept.en}: the patient says it has gone («${m.quote}»).');
+      if (m.present && m.past) {
+        report.notes.add(l('${concept.pt}: o doente diz que já passou («${m.quote}»).',
+            '${concept.en}: the patient says it has gone («${m.quote}»).'));
+      }
     } else if (existing.present == present) {
       final f = Finding(concept, present, existing.evidence, FindingSource.both);
       findings[m.id] = f;
@@ -135,11 +141,14 @@ class MergeReport {
       final f = Finding(concept, true, m.quote, FindingSource.model);
       findings[m.id] = f;
       report.added.add(f);
-      report.notes.add('${concept.en}: rules read it as denied, the model as present («${m.quote}»).');
+      report.notes.add(l('${concept.pt}: as regras leram negado, o modelo leu presente («${m.quote}»).',
+          '${concept.en}: rules read it as denied, the model as present («${m.quote}»).'));
     } else {
       report.notes.add(m.past
-          ? '${concept.en}: the patient says it has gone («${m.quote}»); still shown, please check.'
-          : '${concept.en}: the model read it as denied («${m.quote}»); still shown, please check.');
+          ? l('${concept.pt}: o doente diz que já passou («${m.quote}»); continua visível, confirme.',
+              '${concept.en}: the patient says it has gone («${m.quote}»); still shown, please check.')
+          : l('${concept.pt}: o modelo leu como negado («${m.quote}»); continua visível, confirme.',
+              '${concept.en}: the model read it as denied («${m.quote}»); still shown, please check.'));
     }
   }
 

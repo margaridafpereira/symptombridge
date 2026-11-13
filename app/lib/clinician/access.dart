@@ -36,10 +36,12 @@ class SentIntake {
   bool get emergency => session.assessment.redFlags.any((f) => f.urgency == Urgency.emergency);
   bool get urgent => session.assessment.redFlags.isNotEmpty;
 
-  /// The first complaint the patient mentioned, for the list.
-  String get summary {
+  /// The first complaints the patient mentioned, for the list.
+  String summary(Lang lang) {
     final present = session.assessment.extraction.present.toList();
-    return present.isEmpty ? 'Sem sintomas identificados' : present.take(3).map((f) => f.concept.pt).join(', ');
+    return present.isEmpty
+        ? lang.pick('Sem sintomas identificados', 'No symptoms found')
+        : present.take(3).map((f) => f.concept.label(lang)).join(', ');
   }
 }
 

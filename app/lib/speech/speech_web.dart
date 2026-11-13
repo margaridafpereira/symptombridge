@@ -1,9 +1,10 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import 'package:symptom_engine/symptom_engine.dart' show Lang;
 import 'package:web/web.dart' as web;
 
-/// The browser's speech recognition (Chrome, Edge), in European Portuguese.
+/// The browser's speech recognition (Chrome, Edge), in European Portuguese or British English.
 /// Audio is handled by the browser's own service; the app only sees text.
 class SpeechInput {
   JSFunction? get _ctor =>
@@ -16,12 +17,16 @@ class SpeechInput {
   JSObject? _rec;
   bool _stopping = false;
 
-  void start({required void Function(String text, bool isFinal) onText, required void Function(String? error) onEnd}) {
+  void start({
+    required Lang lang,
+    required void Function(String text, bool isFinal) onText,
+    required void Function(String? error) onEnd,
+  }) {
     final ctor = _ctor;
     if (ctor == null) return onEnd('speech recognition is not available in this browser');
     final rec = ctor.callAsConstructor<JSObject>();
     rec
-      ..setProperty('lang'.toJS, 'pt-PT'.toJS)
+      ..setProperty('lang'.toJS, lang.pick('pt-PT', 'en-GB').toJS)
       ..setProperty('continuous'.toJS, true.toJS)
       ..setProperty('interimResults'.toJS, true.toJS);
     rec.setProperty(

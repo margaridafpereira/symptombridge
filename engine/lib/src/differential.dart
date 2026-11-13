@@ -1,5 +1,6 @@
 import 'concepts.dart';
 import 'extractor.dart';
+import 'lang.dart';
 
 class Condition {
   const Condition(this.id, this.en, this.pt, this.features,
@@ -20,6 +21,8 @@ class Condition {
 
   /// Must not be missed (shown even when it ranks lower).
   final bool dangerous;
+
+  String label(Lang lang) => lang.pick(pt, en);
 }
 
 /// A deliberately small, explicit knowledge base for five presenting

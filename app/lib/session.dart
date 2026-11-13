@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:symptom_engine/symptom_engine.dart';
 
+import 'lang.dart';
+
 /// The Worker that holds the Gemini key. Empty means rules only.
 /// Set at build time: --dart-define=SYMPTOMBRIDGE_API=https://…workers.dev
 const workerUrl = String.fromEnvironment('SYMPTOMBRIDGE_API');
@@ -11,8 +13,13 @@ const workerUrl = String.fromEnvironment('SYMPTOMBRIDGE_API');
 /// away with the rules; the language model runs after a pause, so the free
 /// quota is not spent on every word.
 class Session extends ChangeNotifier {
-  Session({Understander? understander, this.modelDelay = const Duration(milliseconds: 1500)})
-      : understander = understander ?? (workerUrl.isEmpty ? null : WorkerUnderstander(Uri.parse(workerUrl)));
+  Session({Understander? understander, Lang? lang, this.modelDelay = const Duration(milliseconds: 1500)})
+      : understander = understander ?? (workerUrl.isEmpty ? null : WorkerUnderstander(Uri.parse(workerUrl))),
+        lang = lang ?? appLang.value;
+
+  /// The language this conversation is held in, fixed when it starts: it
+  /// decides the lexicon, the speech recognition and the transcript labels.
+  final Lang lang;
 
   final Understander? understander;
   final Duration modelDelay;
@@ -23,7 +30,7 @@ class Session extends ChangeNotifier {
   String interim = '';
   Speaker interimSpeaker = Speaker.patient;
 
-  Assessment assessment = assess('');
+  late Assessment assessment = assess('', lang: lang);
   bool modelRunning = false;
   String? modelError;
   bool get usesModel => understander != null;
@@ -32,7 +39,7 @@ class Session extends ChangeNotifier {
   int _generation = 0;
 
   String get transcript => turns
-      .map((t) => '${t.speaker == Speaker.clinician ? 'Médico' : 'Doente'}: ${t.text}')
+      .map((t) => '${t.speaker == Speaker.clinician ? lang.pick('Médico', 'Doctor') : lang.pick('Doente', 'Patient')}: ${t.text}')
       .join('\n');
 
   void add(Speaker speaker, String text) {
@@ -62,12 +69,12 @@ class Session extends ChangeNotifier {
     modelError = null;
     _debounce?.cancel();
     _generation++;
-    assessment = assess('');
+    assessment = assess('', lang: lang);
     notifyListeners();
   }
 
   void _assess({bool immediateModel = false}) {
-    assessment = assess(transcript);
+    assessment = assess(transcript, lang: lang);
     notifyListeners();
     final model = understander;
     if (model == null) return;
@@ -80,7 +87,7 @@ class Session extends ChangeNotifier {
     final text = transcript;
     modelRunning = true;
     notifyListeners();
-    final a = await assessWith(text, model);
+    final a = await assessWith(text, model, lang: lang);
     if (generation != _generation) return; // a newer line arrived meanwhile
     assessment = a;
     modelError = a.modelError;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../lang.dart';
 import '../screens/consult_screen.dart';
 import '../theme.dart';
 import 'access.dart';
@@ -25,33 +26,40 @@ class ClinicianSignIn extends StatefulWidget {
 
 class _ClinicianSignInState extends State<ClinicianSignIn> {
   final _code = TextEditingController();
-  String? _error;
+  bool _wrong = false;
 
   void _submit() {
     if (ClinicianAccess.instance.signIn(_code.text)) {
       Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => widget.then));
     } else {
-      setState(() => _error = 'Código errado.');
+      setState(() => _wrong = true);
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Área do profissional de saúde')),
+        appBar: AppBar(
+          title: Text(context.tr('Área do profissional de saúde', 'Healthcare professionals')),
+          actions: const [LangButton()],
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
             child: ListView(shrinkWrap: true, padding: const EdgeInsets.all(24), children: [
               const Icon(Icons.badge_outlined, size: 48, color: C.primary),
               const SizedBox(height: 16),
-              const Text('Só para profissionais de saúde',
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text(context.tr('Só para profissionais de saúde', 'For healthcare professionals only'),
+                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
-              const Text(
-                'Aqui aparecem sinais de alarme e hipóteses clínicas. Numa instituição, a entrada seria '
-                'com o login institucional.',
+              Text(
+                context.tr(
+                  'Aqui aparecem sinais de alarme e hipóteses clínicas. Numa instituição, a entrada seria '
+                      'com o login institucional.',
+                  'This shows red flags and clinical hypotheses. In a hospital, you would sign in with your '
+                      'institutional account.',
+                ),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: C.muted, height: 1.4),
+                style: const TextStyle(color: C.muted, height: 1.4),
               ),
               const SizedBox(height: 24),
               TextField(
@@ -62,21 +70,22 @@ class _ClinicianSignInState extends State<ClinicianSignIn> {
                 textInputAction: TextInputAction.go,
                 onSubmitted: (_) => _submit(),
                 decoration: InputDecoration(
-                  labelText: 'Código de acesso',
-                  errorText: _error,
+                  labelText: context.tr('Código de acesso', 'Access code'),
+                  errorText: _wrong ? context.tr('Código errado.', 'Wrong code.') : null,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 14),
-              FilledButton(onPressed: _submit, child: const Text('Entrar')),
+              FilledButton(onPressed: _submit, child: Text(context.tr('Entrar', 'Sign in'))),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(color: C.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: C.line)),
-                child: const Text(
-                  'Demonstração: o código é ${ClinicianAccess.demoCode}.',
+                child: Text(
+                  context.tr('Demonstração: o código é ${ClinicianAccess.demoCode}.',
+                      'Demo: the code is ${ClinicianAccess.demoCode}.'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: C.muted, fontSize: 13),
+                  style: const TextStyle(color: C.muted, fontSize: 13),
                 ),
               ),
             ]),
@@ -91,11 +100,12 @@ class ClinicianHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text('Área do profissional'),
+          title: Text(context.tr('Área do profissional', 'Clinician area')),
           actions: [
+            const LangButton(),
             TextButton.icon(
               icon: const Icon(Icons.logout),
-              label: const Text('Sair'),
+              label: Text(context.tr('Sair', 'Sign out')),
               onPressed: () {
                 ClinicianAccess.instance.signOut();
                 Navigator.popUntil(context, (r) => r.isFirst);
@@ -117,29 +127,32 @@ class ClinicianHome extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
                       onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ConsultScreen())),
-                      child: const Padding(
-                        padding: EdgeInsets.all(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
                         child: Row(children: [
-                          Icon(Icons.medical_services_outlined, color: Colors.white, size: 30),
-                          SizedBox(width: 16),
+                          const Icon(Icons.medical_services_outlined, color: Colors.white, size: 30),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Nova consulta',
-                                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                              SizedBox(height: 4),
-                              Text('Ouvir a conversa com o doente e ver o painel ao vivo.',
-                                  style: TextStyle(color: Colors.white70)),
+                              Text(context.tr('Nova consulta', 'New consultation'),
+                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 4),
+                              Text(
+                                  context.tr('Ouvir a conversa com o doente e ver o painel ao vivo.',
+                                      'Listen to the conversation with the patient and follow the live panel.'),
+                                  style: const TextStyle(color: Colors.white70)),
                             ]),
                           ),
-                          Icon(Icons.chevron_right, color: Colors.white),
+                          const Icon(Icons.chevron_right, color: Colors.white),
                         ]),
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
                   Row(children: [
-                    const Flexible(
-                      child: Text('Pré-consultas recebidas', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    Flexible(
+                      child: Text(context.tr('Pré-consultas recebidas', 'Pre-visit answers received'),
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                     ),
                     const SizedBox(width: 8),
                     if (items.isNotEmpty)
@@ -147,15 +160,19 @@ class ClinicianHome extends StatelessWidget {
                           child: Text('${items.length}', style: const TextStyle(color: Colors.white, fontSize: 12))),
                   ]),
                   const SizedBox(height: 4),
-                  const Text('As que têm sinais de alarme aparecem primeiro.', style: TextStyle(color: C.muted, fontSize: 13)),
+                  Text(context.tr('As que têm sinais de alarme aparecem primeiro.', 'Those with red flags come first.'),
+                      style: const TextStyle(color: C.muted, fontSize: 13)),
                   const SizedBox(height: 12),
                   if (items.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(color: C.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: C.line)),
-                      child: const Text(
-                        'Ainda não chegou nenhuma. Para experimentar: saia, faça uma pré-consulta como doente e volte a entrar.',
-                        style: TextStyle(color: C.muted),
+                      child: Text(
+                        context.tr(
+                          'Ainda não chegou nenhuma. Para experimentar: saia, faça uma pré-consulta como doente e volte a entrar.',
+                          'None yet. To try it: sign out, answer the pre-visit questions as a patient, and sign back in.',
+                        ),
+                        style: const TextStyle(color: C.muted),
                       ),
                     ),
                   for (final i in items) _IntakeTile(item: i),
@@ -173,6 +190,7 @@ class _IntakeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.lang;
     final color = item.emergency ? C.alarm : (item.urgent ? C.urgent : C.primary);
     final t = item.sentAt;
     final time = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -183,13 +201,13 @@ class _IntakeTile extends StatelessWidget {
       color: C.surface,
       child: ListTile(
         leading: Icon(item.urgent ? Icons.warning_amber_rounded : Icons.description_outlined, color: color),
-        title: Text(item.summary, style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(item.summary(lang), style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text([
-          'Enviada às $time',
-          if (item.urgent) item.session.assessment.redFlags.map((f) => f.pt).join(' · '),
+          context.tr('Enviada às $time', 'Sent at $time'),
+          if (item.urgent) item.session.assessment.redFlags.map((f) => f.label(lang)).join(' · '),
         ].join(' · ')),
         trailing: IconButton(
-          tooltip: 'Arquivar',
+          tooltip: context.tr('Arquivar', 'Archive'),
           icon: const Icon(Icons.archive_outlined),
           onPressed: () => Inbox.instance.remove(item),
         ),

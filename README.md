@@ -4,31 +4,35 @@ The patient describes their symptoms out loud, before the appointment (waiting r
 
 > Portfolio project. Not a medical device. It never gives the patient a diagnosis; everything goes to a clinician, who decides.
 
-**▶ Try it: [margaridafpereira.github.io/symptombridge](https://margaridafpereira.github.io/symptombridge/)** · straight to an example: [?caso=c01](https://margaridafpereira.github.io/symptombridge/?caso=c01)
+**▶ Try it: [margaridafpereira.github.io/symptombridge](https://margaridafpereira.github.io/symptombridge/)** · in English: [?lang=en](https://margaridafpereira.github.io/symptombridge/?lang=en) · straight to an example: [?caso=c01](https://margaridafpereira.github.io/symptombridge/?caso=c01) (Portuguese) or [?caso=e01](https://margaridafpereira.github.io/symptombridge/?caso=e01) (English)
 
 ![The clinician's screen during a consultation](docs/consultation.png)
 
 ## One app, two moments
 
-- **Consultation:** the device sits on the desk and listens. Tap *Médico* or *Doente* for who is speaking (the browser's speech recognition can't tell voices apart). The clinician's panel updates as they talk, and its suggested questions can be tapped straight into the conversation.
-- **Pre-visit:** in the waiting room or at home, the app interviews the patient: safety questions first (chest pain → does it spread to the arm? any sweating?), then whatever best separates the possibilities. Big yes/no buttons, or answer in your own words. If an emergency red flag fires, the patient is told what to do (alert staff, call 112), never why. At the end, *Enviar ao médico* opens the same clinician panel.
+- **Consultation:** the device sits on the desk and listens. Tap *Doctor* or *Patient* for who is speaking (the browser's speech recognition can't tell voices apart). The clinician's panel updates as they talk, and its suggested questions can be tapped straight into the conversation.
+- **Pre-visit:** in the waiting room or at home, the app interviews the patient: safety questions first (chest pain → does it spread to the arm? any sweating?), then whatever best separates the possibilities. Big yes/no buttons, or answer in your own words. If an emergency red flag fires, the patient is told what to do (alert staff, call 112), never why. At the end, *Send to the doctor* opens the same clinician panel.
 
-Speech uses the browser's recognition (Chrome, Edge) in European Portuguese; anywhere else you can type, or load one of the fictional cases.
+## Portuguese and English
+
+The whole app works in European Portuguese and in English: screens, guided questions, speech recognition (pt-PT or en-GB), the rules engine and the language model. A PT | EN switch sits on the home and clinician screens; the language starts from the browser's, or from `?lang=en` in the address. A conversation keeps the language it started in.
+
+Speech uses the browser's recognition (Chrome, Edge); anywhere else you can type, or load one of the fictional cases.
 
 ## The engine, measured honestly
 
-The core (`engine/`, pure Dart) turns Portuguese speech into findings, red flags and hypotheses. Rules and an explicit knowledge base, no AI model yet, so it can't invent symptoms and every output points back to the patient's words.
+The core (`engine/`, pure Dart) turns speech into findings, red flags and hypotheses. Rules and an explicit knowledge base, so it can't invent symptoms and every output points back to the patient's words. Each language has its own lexicon and grammar (negation, yes/no answers, age, duration); the red flags and the knowledge base are shared.
 
 It's checked against fictional cases (`eval/`):
 
-| | Development set (20 cases) | Challenge set (10 cases) |
-|---|---|---|
-| Findings recalled | 100 % | **44 %** |
-| Red flags caught | 8 / 8 | **0 / 4** |
-| False red flags | 0 | 1 |
-| Right condition in top 3 | 100 % | **43 %** |
+| | Development set (20 cases) | Challenge set (10 cases) | English set (14 cases) |
+|---|---|---|---|
+| Findings recalled | 100 % | **44 %** | 100 % |
+| Red flags caught | 8 / 8 | **0 / 4** | 8 / 8 |
+| False red flags | 0 | 1 | 0 |
+| Right condition in top 3 | 100 % | **43 %** | 100 % |
 
-The development set was written alongside the rules, so of course it scores 100 %. The challenge set was written afterwards to break it, and is never tuned against. It did:
+The development and English sets were written alongside the rules, so of course they score 100 %. The challenge set was written afterwards to break it, and is never tuned against. It did:
 
 - "ficou com a cara à banda e não consegue levantar o braço" (a stroke, in a relative's words) → no red flag;
 - "às vezes penso que era melhor não estar cá" → no suicide-risk flag;
@@ -43,11 +47,11 @@ That's the point of measuring: a hand-written lexicon handles the textbook phras
 ```bash
 cd engine
 dart run example/demo.dart     # one transcript in, assessment out
-dart test                      # both evaluation sets, report in eval/report.md
+dart test                      # all evaluation sets, report in eval/report.md
 cd ../app && flutter run -d chrome
 ```
 
-## The language-model layer (built, waiting for a key)
+## The language-model layer
 
 To understand how people actually talk, a model reads the transcript on top of the rules. It's free: Google's Gemini free tier, called through a small Cloudflare Worker ([worker/worker.js](worker/worker.js)) that keeps the key secret, only answers this site and only does this one task.
 
@@ -65,4 +69,5 @@ SYMPTOMBRIDGE_API=https://symptombridge-api.<account>.workers.dev dart test   # 
 ## Next
 
 - Run the challenge set with the model and publish the before/after.
-- Patient and clinician on different devices (a small sync service), and English for the interface.
+- An English challenge set, written to break the English lexicon.
+- Patient and clinician on different devices (a small sync service).

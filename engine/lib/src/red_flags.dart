@@ -1,4 +1,5 @@
 import 'extractor.dart';
+import 'lang.dart';
 
 enum Urgency {
   /// Act now: the patient should be seen immediately.
@@ -21,6 +22,9 @@ class RedFlag {
 
   /// The patient's words that raised it.
   final List<String> evidence;
+
+  String label(Lang lang) => lang.pick(pt, en);
+  String action(Lang lang) => lang.pick(actionPt, actionEn);
 
   @override
   String toString() => '$id (${urgency.name})';

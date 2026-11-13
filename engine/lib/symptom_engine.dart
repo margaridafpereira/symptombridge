@@ -4,12 +4,14 @@ library;
 
 import 'src/differential.dart';
 import 'src/extractor.dart';
+import 'src/lang.dart';
 import 'src/red_flags.dart';
 import 'src/understanding.dart';
 
 export 'src/concepts.dart';
 export 'src/differential.dart';
 export 'src/extractor.dart';
+export 'src/lang.dart';
 export 'src/red_flags.dart';
 export 'src/understanding.dart';
 
@@ -29,22 +31,22 @@ class Assessment {
   final String? model;
 }
 
-Assessment assess(String transcript) {
+Assessment assess(String transcript, {Lang lang = Lang.pt}) {
   final turns = parseTranscript(transcript);
-  final extraction = extract(turns);
+  final extraction = extract(turns, lang: lang);
   return Assessment(turns, extraction, redFlags(extraction), differential(extraction));
 }
 
 /// Rules, then a language model on top when one is given. If the model
 /// fails for any reason, the rules-only assessment is returned with the
 /// reason, so the clinician's screen never goes blank.
-Future<Assessment> assessWith(String transcript, Understander? understander) async {
+Future<Assessment> assessWith(String transcript, Understander? understander, {Lang lang = Lang.pt}) async {
   final turns = parseTranscript(transcript);
-  final rules = extract(turns);
+  final rules = extract(turns, lang: lang);
   if (understander == null) return Assessment(turns, rules, redFlags(rules), differential(rules));
   try {
     final model = await understander.understand(transcript);
-    final (merged, report) = merge(rules, model, transcript);
+    final (merged, report) = merge(rules, model, transcript, lang: lang);
     return Assessment(turns, merged, redFlags(merged), differential(merged), merge: report, model: understander.name);
   } on Exception catch (e) {
     return Assessment(turns, rules, redFlags(rules), differential(rules), modelError: '$e', model: understander.name);

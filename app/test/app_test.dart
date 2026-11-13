@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:symptom_engine/symptom_engine.dart' show Lang;
 import 'package:symptombridge/clinician/access.dart';
+import 'package:symptombridge/lang.dart';
 import 'package:symptombridge/main.dart';
 import 'package:symptombridge/screens/consult_screen.dart';
 import 'package:symptombridge/screens/intake_screen.dart';
@@ -11,11 +13,12 @@ Future<void> phone(WidgetTester tester, Widget home, {Size size = const Size(108
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 2.625;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(MaterialApp(theme: buildTheme(), home: home));
+  await tester.pumpWidget(LangScope(child: MaterialApp(theme: buildTheme(), home: home)));
 }
 
 void main() {
   setUp(() {
+    appLang.value = Lang.pt;
     ClinicianAccess.instance.signOut();
     Inbox.instance.clear();
   });
@@ -97,5 +100,38 @@ void main() {
     await tester.tap(find.textContaining('Painel do médico'));
     await tester.pumpAndSettle();
     expect(find.text('Constipação'), findsOneWidget);
+  });
+
+  testWidgets('the PT | EN switch turns the screens to English', (tester) async {
+    await phone(tester, const SymptomBridgeApp());
+    await tester.tap(find.text('EN'));
+    await tester.pumpAndSettle();
+    expect(find.text('Start the pre-visit questions'), findsOneWidget);
+    expect(find.text('Começar a pré-consulta'), findsNothing);
+  });
+
+  testWidgets('English consultation: a stroke told by a relative raises the flag', (tester) async {
+    final session = Session(lang: Lang.en);
+    appLang.value = Lang.en;
+    await phone(tester, ConsultScreen(session: session), size: const Size(2400, 1600));
+    session.load("Patient: My husband's face is drooping on one side and he can't lift his arm.");
+    await tester.pump();
+    expect(find.text('Possible stroke (FAST)'), findsOneWidget);
+    expect(find.text('EMERGENCY'), findsOneWidget);
+    expect(session.transcript, startsWith('Patient: '));
+  });
+
+  testWidgets('English pre-visit: chest pain asks the safety question in English', (tester) async {
+    appLang.value = Lang.en;
+    await phone(tester, const IntakeScreen());
+    expect(find.textContaining('What brings you in today?'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'I have a tightness in my chest.');
+    await tester.testTextInput.receiveAction(TextInputAction.send);
+    await tester.pump();
+    expect(find.text('Does the pain spread to the arm, jaw or neck?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Yes'));
+    await tester.pump();
+    expect(find.textContaining('tell a healthcare professional now'), findsOneWidget);
+    expect(find.textContaining('coronary'), findsNothing);
   });
 }

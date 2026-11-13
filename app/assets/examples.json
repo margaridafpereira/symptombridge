@@ -1,162 +1,36 @@
 [
-  {
-    "id": "c01", "title": "Chest pain, classic cardiac", "mode": "consult",
-    "transcript": "Médico: Bom dia, o que o traz cá?\nDoente: Tenho 62 anos. Há uma hora comecei com um aperto no peito que vai para o braço esquerdo.\nMédico: Tem suores?\nDoente: Sim, estou todo suado e com náuseas.\nMédico: Tem febre?\nDoente: Não.",
-    "present": ["chest_pain", "radiation_arm_jaw", "sweating", "nausea"],
-    "absent": ["fever"],
-    "redFlags": ["acs"],
-    "diagnosis": "acs"
-  },
-  {
-    "id": "c02", "title": "Chest pain that hurts when pressed", "mode": "intake",
-    "transcript": "Tenho 34 anos. Dói-me o peito do lado esquerdo desde que carreguei móveis no fim de semana. Dói quando carrego com o dedo. Não tenho falta de ar nem suores.",
-    "present": ["chest_pain", "palpation_pain"],
-    "absent": ["dyspnea", "sweating"],
-    "redFlags": [],
-    "diagnosis": "msk_chest"
-  },
-  {
-    "id": "c03", "title": "Chest pain after a long flight", "mode": "consult",
-    "transcript": "Doente: Cheguei ontem de um voo de 12 horas e hoje tenho falta de ar e dor no peito.\nMédico: A dor piora quando respira fundo?\nDoente: Sim, dói ao respirar fundo.\nMédico: Tem alguma perna inchada?\nDoente: Sim, a perna esquerda está inchada.",
-    "present": ["dyspnea", "chest_pain", "pleuritic", "immobility", "leg_swelling", "one_leg"],
-    "absent": [],
-    "redFlags": ["pe"],
-    "diagnosis": "pe"
-  },
-  {
-    "id": "c04", "title": "Burning chest pain after dinner", "mode": "intake",
-    "transcript": "Tenho uma dor no peito tipo queimor, depois de comer um jantar pesado com fritos. Sinto um sabor ácido na boca. Não piora com o esforço.",
-    "present": ["chest_pain", "heartburn", "fatty_meal"],
-    "absent": ["exertional"],
-    "redFlags": [],
-    "diagnosis": "gord"
-  },
-  {
-    "id": "c05", "title": "Palpitations with anxiety", "mode": "intake",
-    "transcript": "Tenho 25 anos. Estou com muita ansiedade por causa dos exames e de repente sinto o coração acelerado, formigueiro nas mãos e alguma falta de ar. Não desmaiei.",
-    "present": ["anxiety", "palpitations", "tingling", "dyspnea", "sudden_onset"],
-    "absent": ["syncope"],
-    "redFlags": [],
-    "diagnosis": "panic"
-  },
-  {
-    "id": "c06", "title": "Thunderclap headache", "mode": "consult",
-    "transcript": "Doente: Estava no ginásio e de repente deu-me uma dor de cabeça horrível, a pior dor da minha vida.\nMédico: Vomitou?\nDoente: Sim, vomitei duas vezes.\nMédico: Tem febre?\nDoente: Não.",
-    "present": ["headache", "sudden_onset", "worst_ever", "vomiting"],
-    "absent": ["fever"],
-    "redFlags": ["thunderclap"],
-    "diagnosis": "sah"
-  },
-  {
-    "id": "c07", "title": "Headache with fever and stiff neck", "mode": "consult",
-    "transcript": "Doente: Tenho dor de cabeça e febre desde ontem, 39,2 graus.\nMédico: Consegue dobrar o pescoço para a frente?\nDoente: Não consigo dobrar o pescoço, está muito rígido.\nMédico: A luz incomoda-o?\nDoente: Sim, muito.",
-    "present": ["headache", "fever", "neck_stiffness", "photophobia"],
-    "absent": [],
-    "redFlags": ["meningism"],
-    "diagnosis": "meningitis"
-  },
-  {
-    "id": "c08", "title": "Recurring migraine", "mode": "intake",
-    "transcript": "Tenho uma dor de cabeça forte de um lado, com náuseas, e a luz incomoda-me muito. Já me acontece desde há anos. Não tenho febre. Começou devagar esta manhã.",
-    "present": ["headache", "nausea", "photophobia"],
-    "absent": ["fever"],
-    "redFlags": [],
-    "diagnosis": "migraine"
-  },
-  {
-    "id": "c09", "title": "Face drooping and weak arm", "mode": "consult",
-    "transcript": "Médico: O que aconteceu?\nDoente: A minha mulher diz que tenho a boca torta e a fala está enrolada. O braço direito está sem força.\nMédico: Quando começou?\nDoente: Há uns quarenta minutos, de repente.",
-    "present": ["face_droop", "speech_difficulty", "limb_weakness", "sudden_onset"],
-    "absent": [],
-    "redFlags": ["stroke"],
-    "diagnosis": "stroke"
-  },
-  {
-    "id": "c10", "title": "Classic appendicitis", "mode": "consult",
-    "transcript": "Doente: Começou ontem uma dor à volta do umbigo e depois passou para o lado direito, em baixo.\nMédico: Tem náuseas?\nDoente: Sim, enjoo e não tenho fome.\nMédico: Tem diarreia?\nDoente: Não.",
-    "present": ["abdominal_pain", "migration", "rlq_pain", "nausea"],
-    "absent": ["diarrhea"],
-    "redFlags": [],
-    "diagnosis": "appendicitis"
-  },
-  {
-    "id": "c11", "title": "Pain under the right ribs after fried food", "mode": "intake",
-    "transcript": "Tenho uma dor de barriga debaixo das costelas do lado direito, que começou depois de comer uns fritos ao jantar. Vomitei uma vez. Não tenho febre.",
-    "present": ["abdominal_pain", "ruq_pain", "fatty_meal", "vomiting"],
-    "absent": ["fever"],
-    "redFlags": [],
-    "diagnosis": "biliary"
-  },
-  {
-    "id": "c12", "title": "Diarrhoea and vomiting", "mode": "intake",
-    "transcript": "Desde ontem tenho diarreia e vomitei várias vezes. Dói-me a barriga, tipo cólicas. Tenho um bocadinho de febre.",
-    "present": ["diarrhea", "vomiting", "abdominal_pain", "fever"],
-    "absent": [],
-    "redFlags": [],
-    "diagnosis": "gastroenteritis"
-  },
-  {
-    "id": "c13", "title": "Kidney stone", "mode": "consult",
-    "transcript": "Doente: Tenho uma dor fortíssima nas costas, do lado dos rins, que vem e vai. Dez em 10.\nMédico: Viu sangue na urina?\nDoente: Sim, a urina está vermelha.\nMédico: Tem febre?\nDoente: Não.",
-    "present": ["flank_pain", "blood_urine"],
-    "absent": ["fever"],
-    "redFlags": [],
-    "diagnosis": "renal_colic"
-  },
-  {
-    "id": "c14", "title": "Burning on passing urine", "mode": "intake",
-    "transcript": "Arde quando urino e tenho ido à casa de banho de hora a hora. Não tenho febre nem dor nas costas.",
-    "present": ["dysuria", "frequency"],
-    "absent": ["fever"],
-    "redFlags": [],
-    "diagnosis": "uti"
-  },
-  {
-    "id": "c15", "title": "Abdominal pain, period late", "mode": "consult",
-    "transcript": "Doente: Tenho dor na barriga, mais do lado esquerdo, e fiquei tonta há bocado.\nMédico: Pode estar grávida?\nDoente: Não sei, tenho o período atrasado duas semanas.",
-    "present": ["abdominal_pain", "dizziness", "pregnant"],
-    "absent": [],
-    "redFlags": ["ectopic"],
-    "diagnosis": "ectopic"
-  },
-  {
-    "id": "c16", "title": "Asthma attack", "mode": "consult",
-    "transcript": "Doente: Tenho asma e desde esta manhã estou com falta de ar e o peito a chiar. A bombinha não está a ajudar.\nMédico: Consegue falar normalmente?\nDoente: Custa-me, não consigo terminar as frases.",
-    "present": ["asthma_history", "dyspnea", "wheeze", "cannot_finish_sentences"],
-    "absent": [],
-    "redFlags": ["resp_distress"],
-    "diagnosis": "asthma"
-  },
-  {
-    "id": "c17", "title": "Pneumonia", "mode": "intake",
-    "transcript": "Tenho tosse com expetoração amarela há quatro dias, febre de 38,8 graus e arrepios. Dói ao respirar fundo.",
-    "present": ["cough", "sputum", "fever", "chills", "pleuritic"],
-    "absent": [],
-    "redFlags": [],
-    "diagnosis": "pneumonia"
-  },
-  {
-    "id": "c18", "title": "Common cold", "mode": "intake",
-    "transcript": "Estou constipado, com o nariz entupido e dor de garganta desde anteontem. Tenho um pouco de tosse. Não tenho falta de ar.",
-    "present": ["runny_nose", "sore_throat", "cough"],
-    "absent": ["dyspnea"],
-    "redFlags": [],
-    "diagnosis": "urti"
-  },
-  {
-    "id": "c19", "title": "Breathless lying flat, swollen ankles", "mode": "consult",
-    "transcript": "Doente: Tenho 78 anos e insuficiência cardíaca. Ando com mais falta de ar, já durmo com três almofadas.\nMédico: Tem as pernas inchadas?\nDoente: Sim, os tornozelos estão muito inchados, os dois.",
-    "present": ["hf_history", "dyspnea", "orthopnea", "leg_swelling"],
-    "absent": [],
-    "redFlags": [],
-    "diagnosis": "heart_failure"
-  },
-  {
-    "id": "c20", "title": "Swollen lips after shellfish", "mode": "intake",
-    "transcript": "Depois de comer marisco ao almoço, os lábios estão a inchar e tenho falta de ar. Também tenho manchas vermelhas na pele.",
-    "present": ["allergen", "swelling_face_throat", "dyspnea", "rash"],
-    "absent": [],
-    "redFlags": ["anaphylaxis"],
-    "diagnosis": "anaphylaxis"
-  }
+  {"id": "c01", "title": "Chest pain, classic cardiac", "mode": "consult", "transcript": "Médico: Bom dia, o que o traz cá?\nDoente: Tenho 62 anos. Há uma hora comecei com um aperto no peito que vai para o braço esquerdo.\nMédico: Tem suores?\nDoente: Sim, estou todo suado e com náuseas.\nMédico: Tem febre?\nDoente: Não.", "present": ["chest_pain", "radiation_arm_jaw", "sweating", "nausea"], "absent": ["fever"], "redFlags": ["acs"], "diagnosis": "acs"},
+  {"id": "c02", "title": "Chest pain that hurts when pressed", "mode": "intake", "transcript": "Tenho 34 anos. Dói-me o peito do lado esquerdo desde que carreguei móveis no fim de semana. Dói quando carrego com o dedo. Não tenho falta de ar nem suores.", "present": ["chest_pain", "palpation_pain"], "absent": ["dyspnea", "sweating"], "redFlags": [], "diagnosis": "msk_chest"},
+  {"id": "c03", "title": "Chest pain after a long flight", "mode": "consult", "transcript": "Doente: Cheguei ontem de um voo de 12 horas e hoje tenho falta de ar e dor no peito.\nMédico: A dor piora quando respira fundo?\nDoente: Sim, dói ao respirar fundo.\nMédico: Tem alguma perna inchada?\nDoente: Sim, a perna esquerda está inchada.", "present": ["dyspnea", "chest_pain", "pleuritic", "immobility", "leg_swelling", "one_leg"], "absent": [], "redFlags": ["pe"], "diagnosis": "pe"},
+  {"id": "c04", "title": "Burning chest pain after dinner", "mode": "intake", "transcript": "Tenho uma dor no peito tipo queimor, depois de comer um jantar pesado com fritos. Sinto um sabor ácido na boca. Não piora com o esforço.", "present": ["chest_pain", "heartburn", "fatty_meal"], "absent": ["exertional"], "redFlags": [], "diagnosis": "gord"},
+  {"id": "c05", "title": "Palpitations with anxiety", "mode": "intake", "transcript": "Tenho 25 anos. Estou com muita ansiedade por causa dos exames e de repente sinto o coração acelerado, formigueiro nas mãos e alguma falta de ar. Não desmaiei.", "present": ["anxiety", "palpitations", "tingling", "dyspnea", "sudden_onset"], "absent": ["syncope"], "redFlags": [], "diagnosis": "panic"},
+  {"id": "c06", "title": "Thunderclap headache", "mode": "consult", "transcript": "Doente: Estava no ginásio e de repente deu-me uma dor de cabeça horrível, a pior dor da minha vida.\nMédico: Vomitou?\nDoente: Sim, vomitei duas vezes.\nMédico: Tem febre?\nDoente: Não.", "present": ["headache", "sudden_onset", "worst_ever", "vomiting"], "absent": ["fever"], "redFlags": ["thunderclap"], "diagnosis": "sah"},
+  {"id": "c07", "title": "Headache with fever and stiff neck", "mode": "consult", "transcript": "Doente: Tenho dor de cabeça e febre desde ontem, 39,2 graus.\nMédico: Consegue dobrar o pescoço para a frente?\nDoente: Não consigo dobrar o pescoço, está muito rígido.\nMédico: A luz incomoda-o?\nDoente: Sim, muito.", "present": ["headache", "fever", "neck_stiffness", "photophobia"], "absent": [], "redFlags": ["meningism"], "diagnosis": "meningitis"},
+  {"id": "c08", "title": "Recurring migraine", "mode": "intake", "transcript": "Tenho uma dor de cabeça forte de um lado, com náuseas, e a luz incomoda-me muito. Já me acontece desde há anos. Não tenho febre. Começou devagar esta manhã.", "present": ["headache", "nausea", "photophobia"], "absent": ["fever"], "redFlags": [], "diagnosis": "migraine"},
+  {"id": "c09", "title": "Face drooping and weak arm", "mode": "consult", "transcript": "Médico: O que aconteceu?\nDoente: A minha mulher diz que tenho a boca torta e a fala está enrolada. O braço direito está sem força.\nMédico: Quando começou?\nDoente: Há uns quarenta minutos, de repente.", "present": ["face_droop", "speech_difficulty", "limb_weakness", "sudden_onset"], "absent": [], "redFlags": ["stroke"], "diagnosis": "stroke"},
+  {"id": "c10", "title": "Classic appendicitis", "mode": "consult", "transcript": "Doente: Começou ontem uma dor à volta do umbigo e depois passou para o lado direito, em baixo.\nMédico: Tem náuseas?\nDoente: Sim, enjoo e não tenho fome.\nMédico: Tem diarreia?\nDoente: Não.", "present": ["abdominal_pain", "migration", "rlq_pain", "nausea"], "absent": ["diarrhea"], "redFlags": [], "diagnosis": "appendicitis"},
+  {"id": "c11", "title": "Pain under the right ribs after fried food", "mode": "intake", "transcript": "Tenho uma dor de barriga debaixo das costelas do lado direito, que começou depois de comer uns fritos ao jantar. Vomitei uma vez. Não tenho febre.", "present": ["abdominal_pain", "ruq_pain", "fatty_meal", "vomiting"], "absent": ["fever"], "redFlags": [], "diagnosis": "biliary"},
+  {"id": "c12", "title": "Diarrhoea and vomiting", "mode": "intake", "transcript": "Desde ontem tenho diarreia e vomitei várias vezes. Dói-me a barriga, tipo cólicas. Tenho um bocadinho de febre.", "present": ["diarrhea", "vomiting", "abdominal_pain", "fever"], "absent": [], "redFlags": [], "diagnosis": "gastroenteritis"},
+  {"id": "c13", "title": "Kidney stone", "mode": "consult", "transcript": "Doente: Tenho uma dor fortíssima nas costas, do lado dos rins, que vem e vai. Dez em 10.\nMédico: Viu sangue na urina?\nDoente: Sim, a urina está vermelha.\nMédico: Tem febre?\nDoente: Não.", "present": ["flank_pain", "blood_urine"], "absent": ["fever"], "redFlags": [], "diagnosis": "renal_colic"},
+  {"id": "c14", "title": "Burning on passing urine", "mode": "intake", "transcript": "Arde quando urino e tenho ido à casa de banho de hora a hora. Não tenho febre nem dor nas costas.", "present": ["dysuria", "frequency"], "absent": ["fever"], "redFlags": [], "diagnosis": "uti"},
+  {"id": "c15", "title": "Abdominal pain, period late", "mode": "consult", "transcript": "Doente: Tenho dor na barriga, mais do lado esquerdo, e fiquei tonta há bocado.\nMédico: Pode estar grávida?\nDoente: Não sei, tenho o período atrasado duas semanas.", "present": ["abdominal_pain", "dizziness", "pregnant"], "absent": [], "redFlags": ["ectopic"], "diagnosis": "ectopic"},
+  {"id": "c16", "title": "Asthma attack", "mode": "consult", "transcript": "Doente: Tenho asma e desde esta manhã estou com falta de ar e o peito a chiar. A bombinha não está a ajudar.\nMédico: Consegue falar normalmente?\nDoente: Custa-me, não consigo terminar as frases.", "present": ["asthma_history", "dyspnea", "wheeze", "cannot_finish_sentences"], "absent": [], "redFlags": ["resp_distress"], "diagnosis": "asthma"},
+  {"id": "c17", "title": "Pneumonia", "mode": "intake", "transcript": "Tenho tosse com expetoração amarela há quatro dias, febre de 38,8 graus e arrepios. Dói ao respirar fundo.", "present": ["cough", "sputum", "fever", "chills", "pleuritic"], "absent": [], "redFlags": [], "diagnosis": "pneumonia"},
+  {"id": "c18", "title": "Common cold", "mode": "intake", "transcript": "Estou constipado, com o nariz entupido e dor de garganta desde anteontem. Tenho um pouco de tosse. Não tenho falta de ar.", "present": ["runny_nose", "sore_throat", "cough"], "absent": ["dyspnea"], "redFlags": [], "diagnosis": "urti"},
+  {"id": "c19", "title": "Breathless lying flat, swollen ankles", "mode": "consult", "transcript": "Doente: Tenho 78 anos e insuficiência cardíaca. Ando com mais falta de ar, já durmo com três almofadas.\nMédico: Tem as pernas inchadas?\nDoente: Sim, os tornozelos estão muito inchados, os dois.", "present": ["hf_history", "dyspnea", "orthopnea", "leg_swelling"], "absent": [], "redFlags": [], "diagnosis": "heart_failure"},
+  {"id": "c20", "title": "Swollen lips after shellfish", "mode": "intake", "transcript": "Depois de comer marisco ao almoço, os lábios estão a inchar e tenho falta de ar. Também tenho manchas vermelhas na pele.", "present": ["allergen", "swelling_face_throat", "dyspnea", "rash"], "absent": [], "redFlags": ["anaphylaxis"], "diagnosis": "anaphylaxis"},
+  {"id": "e01", "title": "Chest pain, classic cardiac", "mode": "consult", "transcript": "Doctor: Good morning, what brings you in?\nPatient: I'm 62. An hour ago I got a tightness in my chest that goes down my left arm.\nDoctor: Any sweating?\nPatient: Yes, I'm all clammy and I feel sick.\nDoctor: Any fever?\nPatient: No.", "present": ["chest_pain", "radiation_arm_jaw", "sweating", "nausea"], "absent": ["fever"], "redFlags": ["acs"], "diagnosis": "acs", "lang": "en"},
+  {"id": "e02", "title": "Chest pain that hurts when pressed", "mode": "intake", "transcript": "I'm 34. My chest is sore on the left since I moved furniture at the weekend. It hurts when I press on it. I'm not short of breath and I haven't been sweating.", "present": ["chest_pain", "palpation_pain"], "absent": ["dyspnea", "sweating"], "redFlags": [], "diagnosis": "msk_chest", "lang": "en"},
+  {"id": "e03", "title": "Chest pain after a long flight", "mode": "consult", "transcript": "Patient: I got back yesterday from a 12-hour flight and today I'm short of breath with chest pain.\nDoctor: Is it worse when you breathe in deeply?\nPatient: Yes, it hurts when I take a deep breath.\nDoctor: Any swelling in the legs?\nPatient: Yes, my left leg is swollen.", "present": ["dyspnea", "chest_pain", "pleuritic", "immobility", "leg_swelling", "one_leg"], "absent": [], "redFlags": ["pe"], "diagnosis": "pe", "lang": "en"},
+  {"id": "e04", "title": "Burning chest after dinner", "mode": "intake", "transcript": "After a big greasy dinner I get a burning behind my chest and a sour taste in my mouth. It's heartburn every night. It doesn't come on when I walk.", "present": ["heartburn", "fatty_meal"], "absent": ["exertional"], "redFlags": [], "diagnosis": "gord", "lang": "en"},
+  {"id": "e05", "title": "Thunderclap headache", "mode": "consult", "transcript": "Patient: I was at the gym and suddenly I got a headache, the worst pain of my life.\nDoctor: Can you bend your neck forward?\nPatient: No, my neck is stiff.", "present": ["headache", "sudden_onset", "worst_ever", "neck_stiffness"], "absent": [], "redFlags": ["thunderclap", "meningism"], "diagnosis": "sah", "lang": "en"},
+  {"id": "e06", "title": "Migraine, as usual", "mode": "intake", "transcript": "I've had a headache for two days, on one side, like my usual migraines. Light bothers me and I feel sick. No fever.", "present": ["headache", "photophobia", "nausea"], "absent": ["fever"], "redFlags": [], "diagnosis": "migraine", "lang": "en"},
+  {"id": "e07", "title": "Stroke told by a relative", "mode": "consult", "transcript": "Patient: My husband's face is drooping on one side and he can't lift his arm.\nDoctor: When did it start?\nPatient: Suddenly, about 40 minutes ago. His speech is slurred too.", "present": ["face_droop", "limb_weakness", "speech_difficulty", "sudden_onset"], "absent": [], "redFlags": ["stroke"], "diagnosis": "stroke", "lang": "en"},
+  {"id": "e08", "title": "Breathless at rest", "mode": "intake", "transcript": "I have asthma and I'm wheezing. I'm short of breath even when I'm sitting, I can't finish my sentences.", "present": ["asthma_history", "wheeze", "dyspnea", "at_rest", "cannot_finish_sentences"], "absent": [], "redFlags": ["resp_distress"], "diagnosis": "asthma", "lang": "en"},
+  {"id": "e09", "title": "Classic appendicitis", "mode": "consult", "transcript": "Patient: The pain started around my belly button and now it's moved low down on the right.\nDoctor: Any vomiting?\nPatient: Yes, I threw up twice.\nDoctor: Diarrhoea?\nPatient: No.", "present": ["abdominal_pain", "migration", "rlq_pain", "vomiting"], "absent": ["diarrhea"], "redFlags": [], "diagnosis": "appendicitis", "lang": "en"},
+  {"id": "e10", "title": "Burning on passing urine", "mode": "intake", "transcript": "For three days it burns when I pee and I'm going to the toilet all the time. No fever and no blood in my urine.", "present": ["dysuria", "frequency"], "absent": ["fever", "blood_urine"], "redFlags": [], "diagnosis": "uti", "lang": "en"},
+  {"id": "e11", "title": "Common cold", "mode": "intake", "transcript": "I've got a sore throat and a runny nose since yesterday, and a bit of a cough. I'm not short of breath.", "present": ["sore_throat", "runny_nose", "cough"], "absent": ["dyspnea"], "redFlags": [], "diagnosis": "urti", "lang": "en"},
+  {"id": "e12", "title": "Flu", "mode": "consult", "transcript": "Patient: I've had a fever of 39 degrees since yesterday and I'm aching all over.\nDoctor: Any chills?\nPatient: Yes, I keep shivering.", "present": ["fever", "myalgia", "chills"], "absent": [], "redFlags": [], "diagnosis": "flu", "lang": "en"},
+  {"id": "e13", "title": "Allergic reaction to a sting", "mode": "intake", "transcript": "I was stung by a wasp ten minutes ago and now my lips are swollen and I'm wheezing.", "present": ["allergen", "swelling_face_throat", "wheeze"], "absent": [], "redFlags": ["anaphylaxis"], "diagnosis": "anaphylaxis", "lang": "en"},
+  {"id": "e14", "title": "Fever and confusion", "mode": "consult", "transcript": "Patient: My mother has had a high temperature since this morning and she's very confused, she doesn't know where she is.", "present": ["fever", "confusion"], "absent": [], "redFlags": ["sepsis"], "diagnosis": null, "lang": "en"}
 ]

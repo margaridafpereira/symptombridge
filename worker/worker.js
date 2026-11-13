@@ -13,7 +13,7 @@
 // Open the Worker's address with ?check in a browser to see which version is
 // deployed, which model answers and how long it takes.
 
-const VERSION = '2026-11-11b';
+const VERSION = '2026-11-13-en';
 
 // Model names are retired over time, so use aliases and, if Google says one
 // doesn't exist, pick a Flash model from the ones this key can use.
@@ -30,8 +30,9 @@ const CALL_TIMEOUT_MS = 15000; // per model call; the app gives up after 40 s
 // and finally with no setting at all.
 const THINKING_OPTIONS = [{ thinkingBudget: 0 }, { thinkingLevel: 'minimal' }, null];
 
-const INSTRUCTIONS = `You read transcripts of medical consultations in European Portuguese.
-Some lines start with "Médico:" (clinician) or "Doente:" (patient); lines without a label are the patient.
+const INSTRUCTIONS = `You read transcripts of medical consultations in European Portuguese or English.
+Some lines start with "Médico:" or "Doctor:" (clinician), or "Doente:" or "Patient:" (patient);
+lines without a label are the patient. Quote in the language of the transcript.
 
 Find every concept from the CONCEPTS list that the transcript gives information about.
 For each one return:
@@ -48,7 +49,9 @@ For each one return:
 Understand colloquial Portuguese ("moinha" = dull pain, "tripa solta" = diarrhoea,
 "deitar tudo fora" = vomiting, "cara à banda" = face drooping), indirect statements
 ("era melhor não estar cá" = thoughts of suicide) and speech-recognition errors
-("soares frios" = "suores frios").
+("soares frios" = "suores frios"). In English, the same: colloquial words ("the runs" =
+diarrhoea, "throwing up" = vomiting), indirect statements ("everyone would be better off
+without me" = thoughts of suicide) and speech-recognition errors.
 Do not diagnose. Return only concepts actually supported by the transcript.
 
 Answer only with JSON: {"findings": [ ... ]}`;

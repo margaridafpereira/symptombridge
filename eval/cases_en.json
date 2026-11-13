@@ -1,0 +1,114 @@
+[
+  {
+    "id": "e01", "title": "Chest pain, classic cardiac", "mode": "consult",
+    "transcript": "Doctor: Good morning, what brings you in?\nPatient: I'm 62. An hour ago I got a tightness in my chest that goes down my left arm.\nDoctor: Any sweating?\nPatient: Yes, I'm all clammy and I feel sick.\nDoctor: Any fever?\nPatient: No.",
+    "present": ["chest_pain", "radiation_arm_jaw", "sweating", "nausea"],
+    "absent": ["fever"],
+    "redFlags": ["acs"],
+    "diagnosis": "acs"
+  },
+  {
+    "id": "e02", "title": "Chest pain that hurts when pressed", "mode": "intake",
+    "transcript": "I'm 34. My chest is sore on the left since I moved furniture at the weekend. It hurts when I press on it. I'm not short of breath and I haven't been sweating.",
+    "present": ["chest_pain", "palpation_pain"],
+    "absent": ["dyspnea", "sweating"],
+    "redFlags": [],
+    "diagnosis": "msk_chest"
+  },
+  {
+    "id": "e03", "title": "Chest pain after a long flight", "mode": "consult",
+    "transcript": "Patient: I got back yesterday from a 12-hour flight and today I'm short of breath with chest pain.\nDoctor: Is it worse when you breathe in deeply?\nPatient: Yes, it hurts when I take a deep breath.\nDoctor: Any swelling in the legs?\nPatient: Yes, my left leg is swollen.",
+    "present": ["dyspnea", "chest_pain", "pleuritic", "immobility", "leg_swelling", "one_leg"],
+    "absent": [],
+    "redFlags": ["pe"],
+    "diagnosis": "pe"
+  },
+  {
+    "id": "e04", "title": "Burning chest after dinner", "mode": "intake",
+    "transcript": "After a big greasy dinner I get a burning behind my chest and a sour taste in my mouth. It's heartburn every night. It doesn't come on when I walk.",
+    "present": ["heartburn", "fatty_meal"],
+    "absent": ["exertional"],
+    "redFlags": [],
+    "diagnosis": "gord"
+  },
+  {
+    "id": "e05", "title": "Thunderclap headache", "mode": "consult",
+    "transcript": "Patient: I was at the gym and suddenly I got a headache, the worst pain of my life.\nDoctor: Can you bend your neck forward?\nPatient: No, my neck is stiff.",
+    "present": ["headache", "sudden_onset", "worst_ever", "neck_stiffness"],
+    "absent": [],
+    "redFlags": ["thunderclap", "meningism"],
+    "diagnosis": "sah"
+  },
+  {
+    "id": "e06", "title": "Migraine, as usual", "mode": "intake",
+    "transcript": "I've had a headache for two days, on one side, like my usual migraines. Light bothers me and I feel sick. No fever.",
+    "present": ["headache", "photophobia", "nausea"],
+    "absent": ["fever"],
+    "redFlags": [],
+    "diagnosis": "migraine"
+  },
+  {
+    "id": "e07", "title": "Stroke told by a relative", "mode": "consult",
+    "transcript": "Patient: My husband's face is drooping on one side and he can't lift his arm.\nDoctor: When did it start?\nPatient: Suddenly, about 40 minutes ago. His speech is slurred too.",
+    "present": ["face_droop", "limb_weakness", "speech_difficulty", "sudden_onset"],
+    "absent": [],
+    "redFlags": ["stroke"],
+    "diagnosis": "stroke"
+  },
+  {
+    "id": "e08", "title": "Breathless at rest", "mode": "intake",
+    "transcript": "I have asthma and I'm wheezing. I'm short of breath even when I'm sitting, I can't finish my sentences.",
+    "present": ["asthma_history", "wheeze", "dyspnea", "at_rest", "cannot_finish_sentences"],
+    "absent": [],
+    "redFlags": ["resp_distress"],
+    "diagnosis": "asthma"
+  },
+  {
+    "id": "e09", "title": "Classic appendicitis", "mode": "consult",
+    "transcript": "Patient: The pain started around my belly button and now it's moved low down on the right.\nDoctor: Any vomiting?\nPatient: Yes, I threw up twice.\nDoctor: Diarrhoea?\nPatient: No.",
+    "present": ["abdominal_pain", "migration", "rlq_pain", "vomiting"],
+    "absent": ["diarrhea"],
+    "redFlags": [],
+    "diagnosis": "appendicitis"
+  },
+  {
+    "id": "e10", "title": "Burning on passing urine", "mode": "intake",
+    "transcript": "For three days it burns when I pee and I'm going to the toilet all the time. No fever and no blood in my urine.",
+    "present": ["dysuria", "frequency"],
+    "absent": ["fever", "blood_urine"],
+    "redFlags": [],
+    "diagnosis": "uti"
+  },
+  {
+    "id": "e11", "title": "Common cold", "mode": "intake",
+    "transcript": "I've got a sore throat and a runny nose since yesterday, and a bit of a cough. I'm not short of breath.",
+    "present": ["sore_throat", "runny_nose", "cough"],
+    "absent": ["dyspnea"],
+    "redFlags": [],
+    "diagnosis": "urti"
+  },
+  {
+    "id": "e12", "title": "Flu", "mode": "consult",
+    "transcript": "Patient: I've had a fever of 39 degrees since yesterday and I'm aching all over.\nDoctor: Any chills?\nPatient: Yes, I keep shivering.",
+    "present": ["fever", "myalgia", "chills"],
+    "absent": [],
+    "redFlags": [],
+    "diagnosis": "flu"
+  },
+  {
+    "id": "e13", "title": "Allergic reaction to a sting", "mode": "intake",
+    "transcript": "I was stung by a wasp ten minutes ago and now my lips are swollen and I'm wheezing.",
+    "present": ["allergen", "swelling_face_throat", "wheeze"],
+    "absent": [],
+    "redFlags": ["anaphylaxis"],
+    "diagnosis": "anaphylaxis"
+  },
+  {
+    "id": "e14", "title": "Fever and confusion", "mode": "consult",
+    "transcript": "Patient: My mother has had a high temperature since this morning and she's very confused, she doesn't know where she is.",
+    "present": ["fever", "confusion"],
+    "absent": [],
+    "redFlags": ["sepsis"],
+    "diagnosis": null
+  }
+]

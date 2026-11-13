@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:symptom_engine/symptom_engine.dart';
 
+import '../lang.dart';
 import '../session.dart';
 import '../speech/speech.dart';
 import '../theme.dart';
@@ -26,7 +27,8 @@ class ConsultScreen extends StatefulWidget {
 }
 
 class _ConsultScreenState extends State<ConsultScreen> {
-  late final Session _session = widget.session ?? Session();
+  late Session _session = widget.session ?? Session();
+  late bool _ownsSession = widget.session == null || widget.ownsSession;
   final _speech = SpeechInput();
   final _input = TextEditingController();
   Speaker _speaker = Speaker.patient;
@@ -39,7 +41,7 @@ class _ConsultScreenState extends State<ConsultScreen> {
     if (id != null) {
       _loadCases().then((cases) {
         final c = cases.where((c) => c['id'] == id).firstOrNull;
-        if (c != null && mounted) _session.load(c['transcript'] as String);
+        if (c != null && mounted) _open(c);
       });
     }
   }
@@ -47,10 +49,29 @@ class _ConsultScreenState extends State<ConsultScreen> {
   static Future<List<Map<String, dynamic>>> _loadCases() async =>
       (jsonDecode(await rootBundle.loadString('assets/examples.json')) as List).cast<Map<String, dynamic>>();
 
+  static Lang _langOf(Map<String, dynamic> c) => c['lang'] == 'en' ? Lang.en : Lang.pt;
+
+  /// Loads an example; one in the other language starts a fresh session in
+  /// that language and switches the screens to it.
+  void _open(Map<String, dynamic> c) {
+    final lang = _langOf(c);
+    if (lang != _session.lang) {
+      _speech.stop();
+      if (_ownsSession) _session.dispose();
+      setState(() {
+        _session = Session(lang: lang);
+        _ownsSession = true;
+        _listening = false;
+      });
+      appLang.value = lang;
+    }
+    _session.load(c['transcript'] as String);
+  }
+
   @override
   void dispose() {
     _speech.stop();
-    if (widget.session == null || widget.ownsSession) _session.dispose();
+    if (_ownsSession) _session.dispose();
     super.dispose();
   }
 
@@ -62,12 +83,13 @@ class _ConsultScreenState extends State<ConsultScreen> {
     }
     setState(() => _listening = true);
     _speech.start(
+      lang: _session.lang,
       onText: (text, isFinal) => isFinal ? _session.add(_speaker, text) : _session.setInterim(_speaker, text),
       onEnd: (error) {
         if (!mounted) return;
         setState(() => _listening = false);
         if (error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Microfone: $error')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${context.tr('Microfone', 'Microphone')}: $error')));
         }
       },
     );
@@ -79,29 +101,30 @@ class _ConsultScreenState extends State<ConsultScreen> {
   }
 
   Future<void> _examples() async {
-    final cases = await _loadCases();
+    final lang = context.lang;
+    final cases = [for (final c in await _loadCases()) if (_langOf(c) == lang) c];
     if (!mounted) return;
-    final picked = await showModalBottomSheet<String>(
+    final picked = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       showDragHandle: true,
       builder: (context) => ListView(children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: Text('Casos fictícios', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          child: Text(lang.pick('Casos fictícios', 'Made-up cases'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         ),
         for (final c in cases)
           ListTile(
             leading: Icon(c['mode'] == 'consult' ? Icons.forum_outlined : Icons.person_outline),
             title: Text(_titlePt(c)),
             subtitle: Text((c['transcript'] as String).split('\n').first, maxLines: 1, overflow: TextOverflow.ellipsis),
-            onTap: () => Navigator.pop(context, c['transcript'] as String),
+            onTap: () => Navigator.pop(context, c),
           ),
       ]),
     );
-    if (picked != null) _session.load(picked);
+    if (picked != null) _open(picked);
   }
 
-  /// The cases are written in Portuguese; their titles are in English for the eval report.
+  /// Titles are in English, for the evaluation report.
   String _titlePt(Map<String, dynamic> c) => '${c['id']} · ${c['title']}';
 
   void _ask(String question) {
@@ -127,12 +150,12 @@ class _ConsultScreenState extends State<ConsultScreen> {
           );
           final panel = ClinicianPanel(session: _session, onAsk: _ask);
           final actions = [
-            IconButton(tooltip: 'Casos de exemplo', icon: const Icon(Icons.library_books_outlined), onPressed: _examples),
-            IconButton(tooltip: 'Limpar', icon: const Icon(Icons.delete_sweep_outlined), onPressed: _session.clear),
+            IconButton(tooltip: context.tr('Casos de exemplo', 'Example cases'), icon: const Icon(Icons.library_books_outlined), onPressed: _examples),
+            IconButton(tooltip: context.tr('Limpar', 'Clear'), icon: const Icon(Icons.delete_sweep_outlined), onPressed: _session.clear),
           ];
           if (wide) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Consulta'), actions: actions),
+              appBar: AppBar(title: Text(context.tr('Consulta', 'Consultation')), actions: actions),
               body: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Expanded(flex: 5, child: conversation),
                 const VerticalDivider(width: 1),
@@ -144,16 +167,16 @@ class _ConsultScreenState extends State<ConsultScreen> {
             length: 2,
             child: Scaffold(
               appBar: AppBar(
-                title: const Text('Consulta'),
+                title: Text(context.tr('Consulta', 'Consultation')),
                 actions: actions,
                 bottom: TabBar(tabs: [
-                  const Tab(text: 'Conversa'),
+                  Tab(text: context.tr('Conversa', 'Conversation')),
                   Tab(
                     child: Badge(
                       isLabelVisible: flags > 0,
                       label: Text('$flags'),
                       backgroundColor: C.alarm,
-                      child: const Padding(padding: EdgeInsets.only(right: 6), child: Text('Painel do médico')),
+                      child: Padding(padding: const EdgeInsets.only(right: 6), child: Text(context.tr('Painel do médico', 'Clinician panel'))),
                     ),
                   ),
                 ]),
@@ -195,8 +218,10 @@ class _Conversation extends StatelessWidget {
                     padding: const EdgeInsets.all(32),
                     child: Text(
                       micSupported
-                          ? 'Carregue no microfone e conversem normalmente.\nToque em "Médico" ou "Doente" para dizer quem está a falar.'
-                          : 'Este browser não tem reconhecimento de voz (use Chrome ou Edge). Pode escrever, ou abrir um caso de exemplo.',
+                          ? context.tr('Carregue no microfone e conversem normalmente.\nToque em "Médico" ou "Doente" para dizer quem está a falar.',
+                              'Tap the microphone and talk as usual.\nTap "Doctor" or "Patient" to say who is speaking.')
+                          : context.tr('Este browser não tem reconhecimento de voz (use Chrome ou Edge). Pode escrever, ou abrir um caso de exemplo.',
+                              'This browser has no speech recognition (use Chrome or Edge). You can type, or open an example case.'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: C.muted, height: 1.5),
                     ),
@@ -216,9 +241,9 @@ class _Conversation extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: SegmentedButton<Speaker>(
-                    segments: const [
-                      ButtonSegment(value: Speaker.clinician, icon: Icon(Icons.medical_services_outlined), label: Text('Médico')),
-                      ButtonSegment(value: Speaker.patient, icon: Icon(Icons.person_outline), label: Text('Doente')),
+                    segments: [
+                      ButtonSegment(value: Speaker.clinician, icon: const Icon(Icons.medical_services_outlined), label: Text(context.tr('Médico', 'Doctor'))),
+                      ButtonSegment(value: Speaker.patient, icon: const Icon(Icons.person_outline), label: Text(context.tr('Doente', 'Patient'))),
                     ],
                     selected: {speaker},
                     onSelectionChanged: (s) => onSpeaker(s.single),
@@ -228,7 +253,7 @@ class _Conversation extends StatelessWidget {
                 if (micSupported)
                   FloatingActionButton(
                     heroTag: 'mic',
-                    tooltip: listening ? 'Parar' : 'Ouvir',
+                    tooltip: listening ? context.tr('Parar', 'Stop') : context.tr('Ouvir', 'Listen'),
                     backgroundColor: listening ? C.alarm : C.primary,
                     foregroundColor: Colors.white,
                     onPressed: onMic,
@@ -241,11 +266,13 @@ class _Conversation extends StatelessWidget {
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
                 decoration: InputDecoration(
-                  hintText: speaker == Speaker.patient ? 'O que o doente diz…' : 'O que o médico pergunta…',
+                  hintText: speaker == Speaker.patient
+                      ? context.tr('O que o doente diz…', 'What the patient says…')
+                      : context.tr('O que o médico pergunta…', 'What the doctor asks…'),
                   filled: true,
                   fillColor: C.background,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  suffixIcon: IconButton(tooltip: 'Enviar', icon: const Icon(Icons.send), onPressed: onSend),
+                  suffixIcon: IconButton(tooltip: context.tr('Enviar', 'Send'), icon: const Icon(Icons.send), onPressed: onSend),
                 ),
               ),
             ]),
@@ -275,7 +302,7 @@ class _Bubble extends StatelessWidget {
           border: Border.all(color: clinician ? C.line : Colors.transparent),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(clinician ? 'Médico' : 'Doente',
+          Text(clinician ? context.tr('Médico', 'Doctor') : context.tr('Doente', 'Patient'),
               style: const TextStyle(fontSize: 11, color: C.muted, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           Text(text, style: TextStyle(color: interim ? C.muted : C.text, fontStyle: interim ? FontStyle.italic : null)),

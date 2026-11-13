@@ -30,3 +30,14 @@ Challenge set, rules: 10 fictional cases
     h10 Speech recognition error: missed [sweating, nausea] red flags {}, expected {acs}
 ```
 
+```
+English set, rules: 14 fictional cases
+  Findings recalled          100 %  (47/47)
+  Findings not in the case   0 %  (0/47)
+  Negations understood       100 %  (9/9)
+  Red flags caught           100 %  (8/8)
+  False red flags            0
+  Right condition first      100 %  (13/13)
+  Right condition in top 3   100 %  (13/13)
+```
+

@@ -47,7 +47,7 @@ void main() {
     ]));
     expect(a.extraction.has('chest_pain'), isTrue);
     expect(flags(a), contains('acs'));
-    expect(a.merge!.notes.single, contains('read it as denied'));
+    expect(a.merge!.notes.single, contains('leu como negado'));
   });
 
   test('saying nothing does not switch a red flag off', () async {

@@ -1,6 +1,12 @@
 /// What a patient can tell us: symptoms, modifiers (how it started, what
 /// makes it worse) and history. Phrases are European Portuguese regular
-/// expressions, matched on lower-case text with accents removed.
+/// expressions, matched on lower-case text with accents removed; the English
+/// ones live in lexicon_en.dart.
+library;
+
+import 'lang.dart';
+import 'lexicon_en.dart';
+
 enum Kind { symptom, modifier, history }
 
 class Concept {
@@ -34,6 +40,12 @@ class Concept {
   /// The phrase itself contains a negation ("não consigo falar"), so a "não"
   /// in it must not flip the finding.
   final bool negationInside;
+
+  /// The patterns for the language being spoken.
+  List<String> phrasesFor(Lang lang) => lang == Lang.pt ? phrases : englishPhrases[id] ?? const [];
+
+  String label(Lang lang) => lang.pick(pt, en);
+  String? ask(Lang lang) => lang == Lang.pt ? askPt : askEn;
 }
 
 const concepts = <Concept>[

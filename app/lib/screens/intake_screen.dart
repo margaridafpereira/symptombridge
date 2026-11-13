@@ -24,7 +24,9 @@ class _Question {
   final bool yesNo;
 }
 
-const _opening = _Question('Olá. O que o traz cá hoje? Conte-me com as suas palavras.', yesNo: false);
+_Question _opening(Lang l) =>
+    _Question(l.pick('Olá. O que o traz cá hoje? Conte-me com as suas palavras.', 'Hello. What brings you in today? Tell me in your own words.'),
+        yesNo: false);
 const _maxQuestions = 8;
 
 /// Pre-visit interview: the patient answers a few questions by voice or by
@@ -41,7 +43,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
   final _speech = SpeechInput();
   final _input = TextEditingController();
   final _asked = <String>{};
-  _Question? _current = _opening;
+  late _Question? _current = _opening(_session.lang);
   int _count = 0;
   bool _listening = false;
   bool _askedDuration = false, _askedSeverity = false;
@@ -52,7 +54,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
   @override
   void initState() {
     super.initState();
-    _session.add(Speaker.clinician, _opening.text);
+    _session.add(Speaker.clinician, _current!.text);
   }
 
   @override
@@ -82,25 +84,26 @@ class _IntakeScreenState extends State<IntakeScreen> {
   }
 
   _Question? _choose(Extraction e, List<Hypothesis> hypotheses) {
-    bool open(String id) => !e.mentioned(id) && !_asked.contains(id) && conceptsById[id]?.askPt != null;
+    final l = _session.lang;
+    bool open(String id) => !e.mentioned(id) && !_asked.contains(id) && conceptsById[id]?.ask(l) != null;
     for (final MapEntry(key: complaint, value: checks) in _screening.entries) {
       if (!e.has(complaint)) continue;
       for (final id in checks) {
-        if (open(id)) return _Question(conceptsById[id]!.askPt!, concept: id);
+        if (open(id)) return _Question(conceptsById[id]!.ask(l)!, concept: id);
       }
     }
     if (!_askedDuration && e.durations.isEmpty && e.present.isNotEmpty) {
       _askedDuration = true;
-      return const _Question('Há quanto tempo começou?', yesNo: false);
+      return _Question(l.pick('Há quanto tempo começou?', 'How long ago did it start?'), yesNo: false);
     }
     final pain = e.has('chest_pain') || e.has('headache') || e.has('abdominal_pain') || e.has('flank_pain');
     if (!_askedSeverity && pain && e.severity == null) {
       _askedSeverity = true;
-      return const _Question('De 0 a 10, quanto lhe dói?', yesNo: false);
+      return _Question(l.pick('De 0 a 10, quanto lhe dói?', 'From 0 to 10, how bad is the pain?'), yesNo: false);
     }
     for (final h in hypotheses.take(3)) {
       for (final c in h.askNext) {
-        if (open(c.id)) return _Question(c.askPt!, concept: c.id);
+        if (open(c.id)) return _Question(c.ask(l)!, concept: c.id);
       }
     }
     return null;
@@ -114,6 +117,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
     }
     setState(() => _listening = true);
     _speech.start(
+      lang: _session.lang,
       onText: (text, isFinal) {
         if (isFinal) {
           _speech.stop();
@@ -133,22 +137,23 @@ class _IntakeScreenState extends State<IntakeScreen> {
     _speech.stop();
     _handedOver = true;
     Inbox.instance.add(SentIntake(_session, DateTime.now()));
-    Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => const _SentScreen()));
+    Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => _SentScreen(lang: _session.lang)));
   }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
         listenable: _session,
         builder: (context, _) {
+          final l = _session.lang;
           final emergency = _session.assessment.redFlags.any((f) => f.urgency == Urgency.emergency);
           final q = _current;
           return Scaffold(
-            appBar: AppBar(title: const Text('Pré-consulta')),
+            appBar: AppBar(title: Text(l.pick('Pré-consulta', 'Before your visit'))),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
                 child: Column(children: [
-                  if (emergency) const _EmergencyBanner(),
+                  if (emergency) _EmergencyBanner(lang: l),
                   Expanded(
                     child: ListView(padding: const EdgeInsets.all(16), reverse: true, children: [
                       if (_session.interim.isNotEmpty) _Line(Speaker.patient, _session.interim, interim: true),
@@ -162,24 +167,29 @@ class _IntakeScreenState extends State<IntakeScreen> {
                       top: false,
                       child: q == null
                           ? Column(children: [
-                              const Text('Obrigado. O médico vai ver as suas respostas antes de o chamar.',
-                                  textAlign: TextAlign.center, style: TextStyle(color: C.muted)),
+                              Text(l.pick('Obrigado. O médico vai ver as suas respostas antes de o chamar.',
+                                      'Thank you. The doctor will read your answers before calling you in.'),
+                                  textAlign: TextAlign.center, style: const TextStyle(color: C.muted)),
                               const SizedBox(height: 12),
                               SizedBox(
                                 width: double.infinity,
-                                child: FilledButton.icon(icon: const Icon(Icons.send), label: const Text('Enviar ao médico'), onPressed: _send),
+                                child: FilledButton.icon(icon: const Icon(Icons.send), label: Text(l.pick('Enviar ao médico', 'Send to the doctor')), onPressed: _send),
                               ),
                             ])
                           : Column(children: [
                               if (q.yesNo)
                                 Row(children: [
-                                  for (final (label, answer) in const [('Sim', 'Sim.'), ('Não', 'Não.'), ('Não sei', 'Não sei.')]) ...[
+                                  for (final (i, label, answer) in [
+                                    (0, l.pick('Sim', 'Yes'), l.pick('Sim.', 'Yes.')),
+                                    (1, l.pick('Não', 'No'), l.pick('Não.', 'No.')),
+                                    (2, l.pick('Não sei', "Don't know"), l.pick('Não sei.', "I don't know.")),
+                                  ]) ...[
                                     Expanded(
-                                      child: label == 'Sim'
+                                      child: i == 0
                                           ? FilledButton(onPressed: () => _answer(answer), child: Text(label))
                                           : OutlinedButton(onPressed: () => _answer(answer), child: Text(label)),
                                     ),
-                                    if (label != 'Não sei') const SizedBox(width: 8),
+                                    if (i < 2) const SizedBox(width: 8),
                                   ],
                                 ]),
                               if (q.yesNo) const SizedBox(height: 10),
@@ -190,11 +200,13 @@ class _IntakeScreenState extends State<IntakeScreen> {
                                     textInputAction: TextInputAction.send,
                                     onSubmitted: _answer,
                                     decoration: InputDecoration(
-                                      hintText: q.yesNo ? 'Ou responda por palavras…' : 'Escreva ou fale…',
+                                      hintText: q.yesNo
+                                          ? l.pick('Ou responda por palavras…', 'Or answer in your own words…')
+                                          : l.pick('Escreva ou fale…', 'Type or speak…'),
                                       filled: true,
                                       fillColor: C.background,
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                      suffixIcon: IconButton(tooltip: 'Enviar', icon: const Icon(Icons.send), onPressed: () => _answer(_input.text)),
+                                      suffixIcon: IconButton(tooltip: l.pick('Enviar', 'Send'), icon: const Icon(Icons.send), onPressed: () => _answer(_input.text)),
                                     ),
                                   ),
                                 ),
@@ -202,7 +214,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
                                   const SizedBox(width: 10),
                                   FloatingActionButton(
                                     heroTag: 'mic',
-                                    tooltip: _listening ? 'Parar' : 'Falar',
+                                    tooltip: _listening ? l.pick('Parar', 'Stop') : l.pick('Falar', 'Speak'),
                                     backgroundColor: _listening ? C.alarm : C.primary,
                                     foregroundColor: Colors.white,
                                     onPressed: _toggleMic,
@@ -211,7 +223,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
                                 ],
                               ]),
                               const SizedBox(height: 8),
-                              TextButton(onPressed: _send, child: const Text('Terminar e enviar ao médico')),
+                              TextButton(onPressed: _send, child: Text(l.pick('Terminar e enviar ao médico', 'Finish and send to the doctor'))),
                             ]),
                     ),
                   ),
@@ -225,7 +237,8 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
 /// What the patient sees when a red flag fires: what to do, never why.
 class _EmergencyBanner extends StatelessWidget {
-  const _EmergencyBanner();
+  const _EmergencyBanner({required this.lang});
+  final Lang lang;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -235,12 +248,14 @@ class _EmergencyBanner extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: C.alarm, borderRadius: BorderRadius.circular(12)),
-          child: const Row(children: [
-            Icon(Icons.emergency, color: Colors.white),
-            SizedBox(width: 10),
+          child: Row(children: [
+            const Icon(Icons.emergency, color: Colors.white),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text('Por favor, avise já um profissional de saúde. Se estiver em casa, ligue 112.',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              child: Text(
+                  lang.pick('Por favor, avise já um profissional de saúde. Se estiver em casa, ligue 112.',
+                      'Please tell a healthcare professional now. If you are at home, call 112.'),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ]),
         ),
@@ -280,26 +295,29 @@ class _Line extends StatelessWidget {
 
 /// After sending: what the patient sees. Nothing clinical.
 class _SentScreen extends StatelessWidget {
-  const _SentScreen();
+  const _SentScreen({required this.lang});
+  final Lang lang;
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Enviado')),
+        appBar: AppBar(title: Text(lang.pick('Enviado', 'Sent'))),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.check_circle, color: C.primary, size: 64),
               const SizedBox(height: 16),
-              const Text('As suas respostas foram enviadas ao médico.',
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              Text(lang.pick('As suas respostas foram enviadas ao médico.', 'Your answers have been sent to the doctor.'),
+                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              const Text('Aguarde que o chamem. Se se sentir pior, avise já um profissional.',
-                  textAlign: TextAlign.center, style: TextStyle(color: C.muted)),
+              Text(
+                  lang.pick('Aguarde que o chamem. Se se sentir pior, avise já um profissional.',
+                      'Please wait to be called. If you feel worse, tell a professional straight away.'),
+                  textAlign: TextAlign.center, style: const TextStyle(color: C.muted)),
               const SizedBox(height: 20),
               OutlinedButton(
                 onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-                child: const Text('Voltar ao início'),
+                child: Text(lang.pick('Voltar ao início', 'Back to the start')),
               ),
             ]),
           ),

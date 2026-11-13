@@ -12,21 +12,25 @@ import 'package:test/test.dart';
 /// - `challenge.json` was written afterwards to break it (colloquial words,
 ///   vague answers, speech-recognition errors) and is never tuned against.
 ///   It only reports.
+/// - `cases_en.json` is the same idea in English, for the English lexicon.
 ///
 /// With SYMPTOMBRIDGE_API set to the Worker's URL, both sets run again with
 /// the language model on top, for the before/after comparison.
 void main() {
   _run('Development set, rules', '../eval/cases.json', enforce: true, fresh: true);
   _run('Challenge set, rules', '../eval/challenge.json', enforce: false);
+  _run('English set, rules', '../eval/cases_en.json', enforce: true, lang: Lang.en);
   final api = Platform.environment['SYMPTOMBRIDGE_API'];
   if (api != null && api.isNotEmpty) {
     final model = WorkerUnderstander(Uri.parse(api));
     _run('Development set, rules + model', '../eval/cases.json', enforce: true, understander: model);
     _run('Challenge set, rules + model', '../eval/challenge.json', enforce: false, understander: model);
+    _run('English set, rules + model', '../eval/cases_en.json', enforce: true, understander: model, lang: Lang.en);
   }
 }
 
-void _run(String name, String path, {required bool enforce, bool fresh = false, Understander? understander}) {
+void _run(String name, String path,
+    {required bool enforce, bool fresh = false, Understander? understander, Lang lang = Lang.pt}) {
   final cases = (jsonDecode(File(path).readAsStringSync()) as List).cast<Map<String, dynamic>>();
   var expectedPresent = 0, foundPresent = 0, unexpected = 0, totalPresent = 0;
   var expectedAbsent = 0, foundAbsent = 0;
@@ -37,7 +41,7 @@ void _run(String name, String path, {required bool enforce, bool fresh = false, 
   group(name, () {
     for (final c in cases) {
       test('${c['id']} ${c['title']}', () async {
-        final a = await assessWith(c['transcript'] as String, understander);
+        final a = await assessWith(c['transcript'] as String, understander, lang: lang);
         if (a.modelError != null) problems.add('${c['id']}: model unavailable (${a.modelError}), rules only');
         final e = a.extraction;
         final present = (c['present'] as List).cast<String>();
