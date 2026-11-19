@@ -29,10 +29,14 @@ class Finding {
   String toString() => '${present ? '+' : '-'}${concept.id} «$evidence»';
 }
 
+/// Only as the patient states it ("sou um homem", "I'm a woman").
+enum Sex { male, female }
+
 class Extraction {
   Extraction({
     required this.findings,
     this.age,
+    this.sex,
     this.temperature,
     this.severity,
     this.durations = const [],
@@ -41,6 +45,7 @@ class Extraction {
   /// One per concept: the latest statement wins ("no fever… actually yes, last night").
   final Map<String, Finding> findings;
   final int? age;
+  final Sex? sex;
   final double? temperature;
 
   /// Pain on a 0–10 scale.
@@ -55,6 +60,10 @@ class Extraction {
 
   Iterable<Finding> get present => findings.values.where((f) => f.present);
   Iterable<Finding> get absent => findings.values.where((f) => !f.present);
+
+  /// Worth asking about pregnancy: not when the patient said they are a man,
+  /// or gave an age outside roughly 12 to 55.
+  bool get pregnancyPossible => sex != Sex.male && (age == null || (age! >= 12 && age! <= 55));
 }
 
 /// Splits "Médico: … / Doente: …" (or "Doctor: … / Patient: …") transcripts
@@ -110,11 +119,13 @@ class _Grammar {
     required this.yes,
     required this.no,
     required this.age,
+    required this.male,
+    required this.female,
     required this.temperature,
     required this.severity,
     required this.durations,
   });
-  final RegExp negation, clauseBreak, yes, no, temperature, severity, durations;
+  final RegExp negation, clauseBreak, yes, no, male, female, temperature, severity, durations;
 
   /// In each pattern, group 1 is the age.
   final List<RegExp> age;
@@ -130,6 +141,9 @@ final _grammar = {
     no: RegExp(r'^\s*(nao|nunca|nada|nenhum[a]?)\b'),
     // "Tenho 58 anos", not "há 3 anos".
     age: [RegExp(r'\b(?:tenho|com|idade de) (\d{1,3}) anos\b')],
+    // The patient about themselves: "sou um homem", not "o meu marido".
+    male: RegExp(r'\bsou (um )?(homem|rapaz|senhor)\b|\bsexo masculino\b'),
+    female: RegExp(r'\bsou (uma )?(mulher|rapariga|senhora)\b|\bsexo feminino\b'),
     temperature: RegExp(r'\b(3[5-9]|4[0-2])([.,](\d))?\s*(graus|º|°)'),
     severity: RegExp(r'\b(\d{1,2})\s*(em|de|numa escala de|sobre)\s*10\b'),
     durations: RegExp(
@@ -147,6 +161,8 @@ final _grammar = {
       RegExp(r'\b(\d{1,3})[- ]years?[- ]old\b'),
       RegExp(r"\b(?:i'm|i am|aged) (\d{1,3})\b(?! ?(minutes?|hours?|days?|weeks?|months?|degrees|out of|/))"),
     ],
+    male: RegExp(r"\b(i'm|i am) (a )?(man|male|guy|boy|gentleman)\b"),
+    female: RegExp(r"\b(i'm|i am) (a )?(woman|female|girl|lady)\b"),
     temperature: RegExp(r'\b(3[5-9]|4[0-2])([.,](\d))?\s*(degrees|º|°)'),
     severity: RegExp(r'\b(\d{1,2})\s*(out of|/|on a scale of)\s*10\b'),
     durations: RegExp(
@@ -235,6 +251,8 @@ Extraction extract(List<Utterance> turns, {Lang lang = Lang.pt}) {
     }
   }
 
+  final Sex? sex = g.male.hasMatch(norm) ? Sex.male : (g.female.hasMatch(norm) ? Sex.female : null);
+
   double? temperature;
   final tm = g.temperature.firstMatch(norm);
   if (tm != null) {
@@ -250,5 +268,5 @@ Extraction extract(List<Utterance> turns, {Lang lang = Lang.pt}) {
 
   final durations = [for (final m in g.durations.allMatches(norm)) patientText.substring(m.start, m.end)];
 
-  return Extraction(findings: findings, age: age, temperature: temperature, severity: severity, durations: durations);
+  return Extraction(findings: findings, age: age, sex: sex, temperature: temperature, severity: severity, durations: durations);
 }

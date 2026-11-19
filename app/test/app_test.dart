@@ -75,6 +75,20 @@ void main() {
     expect(find.textContaining('coronária'), findsNothing);
   });
 
+  testWidgets('pre-visit: a man with abdominal pain is not asked whether he could be pregnant', (tester) async {
+    await phone(tester, const IntakeScreen());
+    await tester.enterText(find.byType(TextField), 'Sou um homem e tenho dor de barriga.');
+    await tester.testTextInput.receiveAction(TextInputAction.send);
+    await tester.pump();
+    for (var i = 0; i < 6 && find.text('Enviar ao médico').evaluate().isEmpty; i++) {
+      expect(find.text('Pode estar grávida?'), findsNothing);
+      await tester.enterText(find.byType(TextField), 'Não.');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pump();
+    }
+    expect(find.text('Pode estar grávida?'), findsNothing);
+  });
+
   testWidgets('a sent pre-visit reaches the clinician only, after the code', (tester) async {
     await phone(tester, const SymptomBridgeApp());
     await tester.tap(find.text('Começar a pré-consulta'));

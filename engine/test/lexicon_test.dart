@@ -27,6 +27,17 @@ void main() {
     expect(e.mentioned('cough'), isFalse);
   });
 
+  test('the patient saying they are a man, or their age, rules out asking about pregnancy', () {
+    Extraction read(String t, [Lang lang = Lang.pt]) => extract(parseTranscript(t), lang: lang);
+    expect(read('Doente: Sou um homem, tenho dor na barriga.').sex, Sex.male);
+    expect(read('Doente: Sou um homem, tenho dor na barriga.').pregnancyPossible, isFalse);
+    expect(read('Doente: O meu marido trouxe-me, dói-me a barriga.').sex, isNull);
+    expect(read('Doente: Sou uma mulher de 30 anos.').pregnancyPossible, isTrue);
+    expect(read('Doente: Tenho 70 anos e dói-me a barriga.').pregnancyPossible, isFalse);
+    expect(read("Patient: I'm a man and my stomach hurts.", Lang.en).pregnancyPossible, isFalse);
+    expect(read("Patient: I'm a woman, my stomach hurts.", Lang.en).sex, Sex.female);
+  });
+
   test('"já tossiu sangue?" is about the blood', () {
     final e = extract(parseTranscript('Médico: Já tossiu sangue?\nDoente: Sim.'));
     expect(e.has('hemoptysis'), isTrue);

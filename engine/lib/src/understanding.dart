@@ -158,6 +158,7 @@ class MergeReport {
     Extraction(
       findings: findings,
       age: rules.age,
+      sex: rules.sex,
       temperature: rules.temperature,
       severity: rules.severity,
       durations: rules.durations,

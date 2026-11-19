@@ -196,7 +196,8 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
   _Question? _choose(Extraction e, List<Hypothesis> hypotheses) {
     final l = _session.lang;
-    bool open(String id) => !e.mentioned(id) && !_asked.contains(id) && conceptsById[id]?.ask(l) != null;
+    bool open(String id) =>
+        !e.mentioned(id) && !_asked.contains(id) && conceptsById[id]?.ask(l) != null && (id != 'pregnant' || e.pregnancyPossible);
     for (final MapEntry(key: complaint, value: checks) in _screening.entries) {
       if (!e.has(complaint)) continue;
       for (final id in checks) {
