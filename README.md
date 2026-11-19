@@ -66,6 +66,16 @@ Safety is in the code, not just the docs ([engine/test/merge_test.dart](engine/t
 SYMPTOMBRIDGE_API=https://symptombridge-api.<account>.workers.dev dart test   # adds the "rules + model" rows
 ```
 
+## Voice with ElevenLabs
+
+The same Worker also holds an ElevenLabs key, so the browser never sees it. Three uses, each optional: if the key is missing, the app works as before.
+
+- **Questions read aloud** (before the visit): each of the app's own questions is spoken in Portuguese or English. The Worker reads only sentences on an allowlist generated from the app ([app/test/voice_allowlist_test.dart](app/test/voice_allowlist_test.dart)), and caches each one, so a question costs credits once.
+- **A voice intake agent** (before the visit): the patient can talk to an ElevenLabs agent instead of tapping answers. After every answer the agent calls a tool that runs in the browser, and the rules engine decides the next question. An emergency is decided by the rules, not by the agent: the tool tells it what to say, word for word.
+- **Scribe transcription** (during the visit): record the whole conversation and ElevenLabs Scribe returns it split into two voices; the one asking more questions is taken as the clinician, so nobody has to tap who is speaking.
+
+Setup is in the comment at the top of [worker/worker.js](worker/worker.js) and in [docs/voice-agent.md](docs/voice-agent.md).
+
 ## Next
 
 - Run the challenge set with the model and publish the before/after.

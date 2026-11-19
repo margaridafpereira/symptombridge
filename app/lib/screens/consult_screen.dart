@@ -7,6 +7,7 @@ import 'package:symptom_engine/symptom_engine.dart';
 import '../lang.dart';
 import '../session.dart';
 import '../speech/speech.dart';
+import '../speech/voice.dart';
 import '../theme.dart';
 import 'clinician_panel.dart';
 
@@ -30,9 +31,13 @@ class _ConsultScreenState extends State<ConsultScreen> {
   late Session _session = widget.session ?? Session();
   late bool _ownsSession = widget.session == null || widget.ownsSession;
   final _speech = SpeechInput();
+  final _voice = Voice();
   final _input = TextEditingController();
   Speaker _speaker = Speaker.patient;
   bool _listening = false;
+
+  /// Recording for ElevenLabs Scribe, which tells the two voices apart.
+  bool _scribing = false, _transcribing = false;
 
   @override
   void initState() {
@@ -71,8 +76,53 @@ class _ConsultScreenState extends State<ConsultScreen> {
   @override
   void dispose() {
     _speech.stop();
+    _voice.cancelRecording();
     if (_ownsSession) _session.dispose();
     super.dispose();
+  }
+
+  /// Records the whole conversation, then Scribe returns it already split
+  /// into doctor and patient, so nobody has to tap who is speaking.
+  Future<void> _toggleScribe() async {
+    final l = _session.lang;
+    final messenger = ScaffoldMessenger.of(context);
+    void say(String text) => messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+    if (!_scribing) {
+      _speech.stop();
+      try {
+        await _voice.startRecording();
+      } catch (e) {
+        say(l.pick('Microfone: $e', 'Microphone: $e'));
+        return;
+      }
+      setState(() {
+        _scribing = true;
+        _listening = false;
+      });
+      say(l.pick('A gravar a consulta. Toque em ■ no topo para terminar e transcrever.',
+          'Recording the consultation. Tap ■ at the top to finish and transcribe.'));
+      return;
+    }
+    setState(() {
+      _scribing = false;
+      _transcribing = true;
+    });
+    try {
+      final turns = await _voice.stopAndTranscribe(l);
+      if (turns.isEmpty) {
+        say(l.pick('Não se ouviu nada na gravação.', 'Nothing was heard in the recording.'));
+      } else {
+        _session.load(turns
+            .map((t) => '${t.speaker == Speaker.clinician ? l.pick('Médico', 'Doctor') : l.pick('Doente', 'Patient')}: ${t.text}')
+            .join('\n'));
+      }
+    } catch (e) {
+      say(l.pick('Transcrição falhou: $e', 'Transcription failed: $e'));
+    } finally {
+      if (mounted) setState(() => _transcribing = false);
+    }
   }
 
   void _toggleMic() {
@@ -150,6 +200,20 @@ class _ConsultScreenState extends State<ConsultScreen> {
           );
           final panel = ClinicianPanel(session: _session, onAsk: _ask);
           final actions = [
+            if (_voice.available)
+              _transcribing
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : IconButton(
+                      tooltip: _scribing
+                          ? context.tr('Terminar e transcrever', 'Finish and transcribe')
+                          : context.tr('Gravar e transcrever com ElevenLabs Scribe (separa médico e doente)',
+                              'Record and transcribe with ElevenLabs Scribe (tells doctor and patient apart)'),
+                      icon: Icon(_scribing ? Icons.stop_circle : Icons.graphic_eq, color: _scribing ? C.alarm : null),
+                      onPressed: _toggleScribe,
+                    ),
             IconButton(tooltip: context.tr('Casos de exemplo', 'Example cases'), icon: const Icon(Icons.library_books_outlined), onPressed: _examples),
             IconButton(tooltip: context.tr('Limpar', 'Clear'), icon: const Icon(Icons.delete_sweep_outlined), onPressed: _session.clear),
           ];

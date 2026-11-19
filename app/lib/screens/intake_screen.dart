@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:symptom_engine/symptom_engine.dart';
 
+import '../intake_questions.dart';
 import '../session.dart';
 import '../speech/speech.dart';
+import '../speech/voice.dart';
 import '../theme.dart';
 import '../clinician/access.dart';
 
@@ -24,9 +28,7 @@ class _Question {
   final bool yesNo;
 }
 
-_Question _opening(Lang l) =>
-    _Question(l.pick('Olá. O que o traz cá hoje? Conte-me com as suas palavras.', 'Hello. What brings you in today? Tell me in your own words.'),
-        yesNo: false);
+_Question _opening(Lang l) => _Question(openingQuestion(l), yesNo: false);
 const _maxQuestions = 8;
 
 /// Pre-visit interview: the patient answers a few questions by voice or by
@@ -41,7 +43,15 @@ class IntakeScreen extends StatefulWidget {
 class _IntakeScreenState extends State<IntakeScreen> {
   final _session = Session();
   final _speech = SpeechInput();
+  final _voice = Voice();
   final _input = TextEditingController();
+
+  /// Questions read aloud by ElevenLabs, when the Worker has a key.
+  bool _readAloud = true;
+  bool _spokeEmergency = false;
+
+  /// The ElevenLabs voice agent is running the interview.
+  bool _agentOn = false;
   final _asked = <String>{};
   late _Question? _current = _opening(_session.lang);
   int _count = 0;
@@ -55,14 +65,19 @@ class _IntakeScreenState extends State<IntakeScreen> {
   void initState() {
     super.initState();
     _session.add(Speaker.clinician, _current!.text);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _say(_current!.text));
   }
 
   @override
   void dispose() {
     _speech.stop();
+    _voice.stopSpeaking();
+    if (_agentOn) _voice.stopAgent();
     if (!_handedOver) _session.dispose();
     super.dispose();
   }
+
+  bool get _emergency => _session.assessment.redFlags.any((f) => f.urgency == Urgency.emergency);
 
   void _answer(String text) {
     if (text.trim().isEmpty) return;
@@ -81,7 +96,89 @@ class _IntakeScreenState extends State<IntakeScreen> {
         _session.add(Speaker.clinician, q.text);
       }
     });
+    _say(q?.text ?? thanksMessage(_session.lang));
   }
+
+  /// Reads a sentence aloud; an emergency is always said first, once.
+  void _say(String text) {
+    if (!_readAloud || !_voice.available || _agentOn) return;
+    final l = _session.lang;
+    if (_emergency && !_spokeEmergency) {
+      _spokeEmergency = true;
+      _voice.speak(emergencyMessage(l), l).then((_) {
+        if (mounted && _readAloud) _voice.speak(text, l);
+      });
+      return;
+    }
+    _voice.speak(text, l);
+  }
+
+  /// The voice agent asks the questions; every answer comes back here, the
+  /// rules engine picks the next question, and an emergency always wins.
+  Future<void> _startAgent() async {
+    final l = _session.lang;
+    _speech.stop();
+    _voice.stopSpeaking();
+    _session.clear();
+    setState(() {
+      _agentOn = true;
+      _listening = false;
+      _asked.clear();
+      _count = 0;
+      _askedDuration = _askedSeverity = false;
+    });
+    try {
+      await _voice.startAgent(
+        lang: l,
+        firstMessage: openingQuestion(l),
+        onLine: _agentLine,
+        onStep: _agentStep,
+        onEnd: (error) {
+          if (!mounted) return;
+          setState(() {
+            _agentOn = false;
+            _current = null;
+          });
+          if (error != null) _toast(l.pick('Assistente de voz: $error', 'Voice assistant: $error'));
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _agentOn = false;
+        _current = _opening(l);
+      });
+      _session.add(Speaker.clinician, _current!.text);
+      _toast(l.pick('Não foi possível iniciar o assistente de voz: $e', 'Could not start the voice assistant: $e'));
+    }
+  }
+
+  void _agentLine(Speaker speaker, String text) {
+    final last = _session.turns.lastOrNull;
+    if (last != null && last.speaker == speaker && last.text == text.trim()) return;
+    _session.add(speaker, text);
+  }
+
+  Future<String> _agentStep(Map<String, Object?> params) async {
+    final answer = params['patient_answer'];
+    if (answer is String && answer.trim().isNotEmpty) _agentLine(Speaker.patient, answer);
+    final l = _session.lang;
+    final a = _session.assessment;
+    final q = _count >= _maxQuestions ? null : _choose(a.extraction, a.hypotheses);
+    if (q != null) {
+      _count++;
+      if (q.concept != null) _asked.add(q.concept!);
+    }
+    return jsonEncode({
+      'urgent': _emergency,
+      if (_emergency) 'tell_patient': emergencyMessage(l),
+      'next_question': q?.text,
+      'finished': q == null,
+      if (q == null) 'closing': thanksMessage(l),
+    });
+  }
+
+  void _toast(String message) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 
   _Question? _choose(Extraction e, List<Hypothesis> hypotheses) {
     final l = _session.lang;
@@ -94,12 +191,12 @@ class _IntakeScreenState extends State<IntakeScreen> {
     }
     if (!_askedDuration && e.durations.isEmpty && e.present.isNotEmpty) {
       _askedDuration = true;
-      return _Question(l.pick('Há quanto tempo começou?', 'How long ago did it start?'), yesNo: false);
+      return _Question(durationQuestion(l), yesNo: false);
     }
     final pain = e.has('chest_pain') || e.has('headache') || e.has('abdominal_pain') || e.has('flank_pain');
     if (!_askedSeverity && pain && e.severity == null) {
       _askedSeverity = true;
-      return _Question(l.pick('De 0 a 10, quanto lhe dói?', 'From 0 to 10, how bad is the pain?'), yesNo: false);
+      return _Question(severityQuestion(l), yesNo: false);
     }
     for (final h in hypotheses.take(3)) {
       for (final c in h.askNext) {
@@ -135,6 +232,8 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
   void _send() {
     _speech.stop();
+    _voice.stopSpeaking();
+    if (_agentOn) _voice.stopAgent();
     _handedOver = true;
     Inbox.instance.add(SentIntake(_session, DateTime.now()));
     Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => _SentScreen(lang: _session.lang)));
@@ -148,7 +247,17 @@ class _IntakeScreenState extends State<IntakeScreen> {
           final emergency = _session.assessment.redFlags.any((f) => f.urgency == Urgency.emergency);
           final q = _current;
           return Scaffold(
-            appBar: AppBar(title: Text(l.pick('Pré-consulta', 'Before your visit'))),
+            appBar: AppBar(title: Text(l.pick('Pré-consulta', 'Before your visit')), actions: [
+              if (_voice.available)
+                IconButton(
+                  tooltip: _readAloud ? l.pick('Não ler as perguntas', 'Stop reading questions aloud') : l.pick('Ler as perguntas em voz alta', 'Read questions aloud'),
+                  icon: Icon(_readAloud ? Icons.volume_up : Icons.volume_off),
+                  onPressed: () {
+                    setState(() => _readAloud = !_readAloud);
+                    if (!_readAloud) _voice.stopSpeaking();
+                  },
+                ),
+            ]),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
@@ -165,11 +274,11 @@ class _IntakeScreenState extends State<IntakeScreen> {
                     decoration: const BoxDecoration(color: C.surface, border: Border(top: BorderSide(color: C.line))),
                     child: SafeArea(
                       top: false,
-                      child: q == null
+                      child: _agentOn
+                          ? _AgentBar(lang: l, onStop: () => _voice.stopAgent())
+                          : q == null
                           ? Column(children: [
-                              Text(l.pick('Obrigado. O médico vai ver as suas respostas antes de o chamar.',
-                                      'Thank you. The doctor will read your answers before calling you in.'),
-                                  textAlign: TextAlign.center, style: const TextStyle(color: C.muted)),
+                              Text(thanksMessage(l), textAlign: TextAlign.center, style: const TextStyle(color: C.muted)),
                               const SizedBox(height: 12),
                               SizedBox(
                                 width: double.infinity,
@@ -222,6 +331,17 @@ class _IntakeScreenState extends State<IntakeScreen> {
                                   ),
                                 ],
                               ]),
+                              if (_voice.available && !_session.turns.any((t) => t.speaker == Speaker.patient)) ...[
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    icon: const Icon(Icons.record_voice_over),
+                                    label: Text(l.pick('Prefiro conversar por voz com o assistente', "I'd rather talk to the voice assistant")),
+                                    onPressed: _startAgent,
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 8),
                               TextButton(onPressed: _send, child: Text(l.pick('Terminar e enviar ao médico', 'Finish and send to the doctor'))),
                             ]),
@@ -233,6 +353,29 @@ class _IntakeScreenState extends State<IntakeScreen> {
           );
         },
       );
+}
+
+/// While the voice agent runs the interview.
+class _AgentBar extends StatelessWidget {
+  const _AgentBar({required this.lang, required this.onStop});
+  final Lang lang;
+  final VoidCallback onStop;
+
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        const Icon(Icons.graphic_eq, color: C.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(lang.pick('A conversar com o assistente de voz. Fale à vontade.', 'Talking to the voice assistant. Speak freely.'),
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(backgroundColor: C.alarm),
+          icon: const Icon(Icons.call_end),
+          label: Text(lang.pick('Terminar', 'End')),
+          onPressed: onStop,
+        ),
+      ]);
 }
 
 /// What the patient sees when a red flag fires: what to do, never why.
@@ -252,10 +395,7 @@ class _EmergencyBanner extends StatelessWidget {
             const Icon(Icons.emergency, color: Colors.white),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                  lang.pick('Por favor, avise já um profissional de saúde. Se estiver em casa, ligue 112.',
-                      'Please tell a healthcare professional now. If you are at home, call 112.'),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              child: Text(emergencyMessage(lang), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ]),
         ),
