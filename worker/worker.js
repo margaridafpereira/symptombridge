@@ -23,7 +23,7 @@
 // Open the Worker's address with ?check in a browser to see which version is
 // deployed, which model answers and how long it takes.
 
-const VERSION = '2026-11-19-voice';
+const VERSION = '2026-11-19-voice2';
 
 // Model names are retired over time, so use aliases and, if Google says one
 // doesn't exist, pick a Flash model from the ones this key can use.
@@ -42,7 +42,10 @@ const THINKING_OPTIONS = [{ thinkingBudget: 0 }, { thinkingLevel: 'minimal' }, n
 
 const ELEVEN = 'https://api.elevenlabs.io/v1';
 const DEFAULT_VOICE = 'EXAVITQu4vr4xnSDxMaL'; // a stock multilingual voice
-const TTS_MODEL = 'eleven_flash_v2_5'; // fast, cheap, accepts a language code
+// Multilingual v2 keeps the accent of the chosen voice (Flash with a
+// language code drifts to Brazilian Portuguese). Each question is cached,
+// so the higher cost is paid once.
+const TTS_MODEL = 'eleven_multilingual_v2';
 const MAX_AUDIO_BYTES = 20 * 1024 * 1024; // about 20 minutes of compressed speech
 
 const INSTRUCTIONS = `You read transcripts of medical consultations in European Portuguese or English.
@@ -227,7 +230,7 @@ async function speak(request, env, ctx, url, cors) {
   if (!env.ELEVENLABS_API_KEY) return fail(500, 'ELEVENLABS_API_KEY is not set');
 
   const cache = caches.default;
-  const key = new Request(`${url.origin}/tts?lang=${lang}&text=${encodeURIComponent(text)}&v=${env.ELEVENLABS_VOICE_PT || ''}${env.ELEVENLABS_VOICE_EN || ''}`);
+  const key = new Request(`${url.origin}/tts?lang=${lang}&text=${encodeURIComponent(text)}&m=${TTS_MODEL}&v=${env.ELEVENLABS_VOICE_PT || ''}${env.ELEVENLABS_VOICE_EN || ''}`);
   const hit = await cache.match(key);
   if (hit) return hit;
 
@@ -235,7 +238,7 @@ async function speak(request, env, ctx, url, cors) {
   const r = await fetch(`${ELEVEN}/text-to-speech/${voice}?output_format=mp3_44100_64`, {
     method: 'POST',
     headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text, model_id: TTS_MODEL, language_code: lang }),
+    body: JSON.stringify({ text, model_id: TTS_MODEL }),
   });
   if (!r.ok) return fail(r.status, `ElevenLabs ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const response = new Response(await r.arrayBuffer(), {

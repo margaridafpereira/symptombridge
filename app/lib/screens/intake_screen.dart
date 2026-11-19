@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -52,6 +53,16 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
   /// The ElevenLabs voice agent is running the interview.
   bool _agentOn = false;
+
+  /// The last answer was spoken, so the microphone reopens by itself after
+  /// the next question: the same interview, hands-free.
+  bool _byVoice = false;
+
+  /// Speech recognition splits an answer into pieces; wait for a pause
+  /// before treating it as finished.
+  Timer? _pause;
+  String _heard = '';
+  static const _pauseToFinish = Duration(milliseconds: 1800);
   final _asked = <String>{};
   late _Question? _current = _opening(_session.lang);
   int _count = 0;
@@ -70,6 +81,7 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
   @override
   void dispose() {
+    _pause?.cancel();
     _speech.stop();
     _voice.stopSpeaking();
     if (_agentOn) _voice.stopAgent();
@@ -79,8 +91,9 @@ class _IntakeScreenState extends State<IntakeScreen> {
 
   bool get _emergency => _session.assessment.redFlags.any((f) => f.urgency == Urgency.emergency);
 
-  void _answer(String text) {
+  void _answer(String text, {bool byVoice = false}) {
     if (text.trim().isEmpty) return;
+    _byVoice = byVoice;
     _session.add(Speaker.patient, text);
     _input.clear();
     _next();
@@ -96,21 +109,22 @@ class _IntakeScreenState extends State<IntakeScreen> {
         _session.add(Speaker.clinician, q.text);
       }
     });
-    _say(q?.text ?? thanksMessage(_session.lang));
+    _say(q?.text ?? thanksMessage(_session.lang)).then((_) {
+      if (mounted && q != null && _byVoice && !_listening && _speech.supported) _startListening();
+    });
   }
 
   /// Reads a sentence aloud; an emergency is always said first, once.
-  void _say(String text) {
+  /// Completes when the audio has finished, so the microphone does not hear it.
+  Future<void> _say(String text) async {
     if (!_readAloud || !_voice.available || _agentOn) return;
     final l = _session.lang;
     if (_emergency && !_spokeEmergency) {
       _spokeEmergency = true;
-      _voice.speak(emergencyMessage(l), l).then((_) {
-        if (mounted && _readAloud) _voice.speak(text, l);
-      });
-      return;
+      await _voice.speak(emergencyMessage(l), l);
+      if (!mounted || !_readAloud) return;
     }
-    _voice.speak(text, l);
+    await _voice.speak(text, l);
   }
 
   /// The voice agent asks the questions; every answer comes back here, the
@@ -206,28 +220,41 @@ class _IntakeScreenState extends State<IntakeScreen> {
     return null;
   }
 
-  void _toggleMic() {
-    if (_listening) {
-      _speech.stop();
-      setState(() => _listening = false);
-      return;
-    }
+  void _toggleMic() => _listening ? _finishListening() : _startListening();
+
+  void _startListening() {
+    _voice.stopSpeaking();
+    _pause?.cancel();
+    _heard = '';
     setState(() => _listening = true);
     _speech.start(
       lang: _session.lang,
       onText: (text, isFinal) {
+        _pause?.cancel();
         if (isFinal) {
-          _speech.stop();
-          setState(() => _listening = false);
-          _answer(text);
+          _heard = '$_heard $text'.trim();
+          _session.setInterim(Speaker.patient, _heard);
+          _pause = Timer(_pauseToFinish, _finishListening);
         } else {
-          _session.setInterim(Speaker.patient, text);
+          _session.setInterim(Speaker.patient, '$_heard $text'.trim());
         }
       },
       onEnd: (error) {
         if (mounted) setState(() => _listening = false);
       },
     );
+  }
+
+  /// The patient paused or tapped stop: everything heard is one answer.
+  void _finishListening() {
+    _pause?.cancel();
+    _speech.stop();
+    if (!mounted) return;
+    final text = _session.interim.trim().isNotEmpty ? _session.interim.trim() : _heard;
+    _heard = '';
+    setState(() => _listening = false);
+    if (text.isEmpty) return;
+    _answer(text, byVoice: true);
   }
 
   void _send() {
