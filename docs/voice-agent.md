@@ -6,8 +6,8 @@ The agent is configured in the ElevenLabs dashboard; the app only starts it thro
 
 ElevenLabs dashboard → **Agents** → **Create agent** → blank agent, named `SymptomBridge intake`.
 
-**First message:** `Olá. O que o traz cá hoje? Conte-me com as suas palavras.`
-(The app replaces it with the English one when the app is in English.)
+**First message:** `{{greeting}}`
+(A dynamic variable: the app sends the opening question in the patient's language. Overrides would do the same but need a paid plan.)
 
 **Default language:** Portuguese. Add **English** as an additional language.
 
@@ -18,7 +18,7 @@ ElevenLabs dashboard → **Agents** → **Create agent** → blank agent, named 
 ```
 You are the reception assistant of a clinic. You interview a patient before their appointment so the doctor can read their answers first. You never diagnose, never name a disease and never give medical advice.
 
-Speak only the language the conversation started in: European Portuguese (Portugal, never Brazilian) or British English. Be warm and brief. One question at a time.
+Speak only {{language_name}}. If it is Portuguese, use European Portuguese from Portugal, never Brazilian. Be warm and brief. One question at a time.
 
 After EVERY answer from the patient, call the tool next_step with patient_answer set to the patient's own words, copied as they said them. Never decide the next question yourself; the tool decides it.
 
@@ -44,7 +44,9 @@ Agent → **Tools** → **Add tool** → **Client tool** (it runs in the browser
 Agent → **Security**:
 
 - **Enable authentication:** on (the app gets a short-lived signed link from the Worker, so nobody can use the agent with your credits from elsewhere).
-- **Overrides:** allow **First message** and **Language** (the app sets them to the language the patient chose).
+- **Overrides:** leave them off; the app uses dynamic variables instead.
+
+Tools → **System tools**: turn on **End conversation** (the agent ends the call when the tool says the interview is finished) and **Detect language** (so it switches to English when the app is in English).
 
 ## 4. Connect it to the Worker
 

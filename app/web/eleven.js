@@ -101,7 +101,12 @@
       };
       conversation = await Conversation.startSession({
         signedUrl: body.signed_url,
-        overrides: { agent: { language, firstMessage } },
+        // Dynamic variables, not overrides: overrides need a paid plan.
+        // The agent's first message is {{greeting}}; its prompt uses {{language_name}}.
+        dynamicVariables: {
+          greeting: firstMessage,
+          language_name: language === 'en' ? 'British English' : 'European Portuguese (Portugal)',
+        },
         clientTools: {
           next_step: async (params) => onTool('next_step', JSON.stringify(params || {})),
         },
